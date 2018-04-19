@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>DonkeyDokie</title>
+
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="static/CSS/lib/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="static/CSS/lib/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="static/CSS/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+</head>
+<body id="app">
+  <nav class="white" role="navigation">
+    <div class="nav-wrapper container">
+      <a href="javascript:void(0)" class="brand-logo" style="height:75px"><img height="75px" style="padding:5px" src="./static/logo.png"></a>
+      <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
+    </div>
+  </nav>
+
+  <div id="index-banner" class="parallax-container">
+    <div class="section no-pad-bot">
+
+      <div class="container">
+        <br><br>
+        <div class="row" style="margin: 50px">
+          <div class="col s8">
+            <h1 class="text-lighten-2 magic_stroke">DonkeyDokie</h1>
+            <h5 class="magic_stroke">Find your travel companions in college</h5>
+          </div>
+
+          <div id="sign_up" class="col s4 z-depth-3 white">
+              <!-- <div class="col s4 z-depth-3 offset-s8 white"> -->
+
+              <div class="input-field col s12">
+                  <input id="icon_prefix" type="text" class="validate"  v-model="sign_up_login_name">
+                  <label for="icon_prefix">Name</label>
+              </div>
+
+              <div class="input-field col s12">
+                  <input id="password" type="password" class="validate" v-model="sign_up_password">
+                  <label for="password">Password</label>
+              </div>
+
+              <div class="input-field col s12">
+                  <input id="password_confirmed" type="password" class="validate" v-model="sign_up_confirmed_password">
+                  <label for="password">Confirmed Password</label>
+              </div>
+
+              <div class="input-field col s12">
+                <input id="email" type="email" class="validate" v-model="sign_up_email">
+                <label for="email" data-error="wrong" data-success="right">Email</label>
+              </div>
+
+              <p v-model="message">{{message}}<p>
+                
+              <a class="waves-effect waves-light btn blue lighten-2" style="margin-top: 10px; margin-bottom: 10px" href="javascript:void(0)" @click="onSignUpSubmit">Sign Up</a>
+              <a class="waves-effect waves-light btn green lighten-2" style="margin-top: 10px; margin-bottom: 10px" href="javascript:void(0)" @click="onChangeToSignIn">Login</a>
+          <!-- </div> -->
+          </div>
+  
+          <div id="modal-login" class="modal">
+              <div class="modal-content">
+                  <div class="row">
+                      <div class="input-field col s6">
+                          <input id="login_email" type="email" class="validate" v-model="sign_in_email">
+                          <label for="email" data-error="wrong" data-success="right">Email</label>
+                      </div>
+                      <div class="input-field col s6">
+                          <input id="login_password" type="password" class="validate" v-model="sign_in_password">
+                          <label for="password" data-error="wrong" data-success="right">Password</label>
+                      </div>
+                      <p v-model="message">{{message}}<p>
+                  </div>
+              </div>
+              <div class="modal-footer">
+                  <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onSignInSubmit">Sign In</a>
+                  <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onSignInCancel">Cancel</a>
+              </div>
+          </div>
+
+        </div>
+          
+      <br><br>
+
+    </div>
+  </div>
+
+  <div class="parallax"><img src="static/images/background1_adjust.jpg" alt="Unsplashed background img 1"></div>
+  </div>
+
+
+  <div class="container">
+    <div class="section">
+
+      <!--   Icon Section   -->
+      <div class="row">
+        <div class="col s12 m4">
+          <div class="icon-block">
+            <h2 class="center grey-text"><i class="material-icons">group</i></h2>
+            <h5 class="center">Best Trips & Compaions</h5>
+
+            <p class="light">Want to travel only with college students? You've got the right place. DonkeyDokie provides you a safe and reliable platform to post trips and find the exact tavel companions that you want. Come and explore!</p>
+          </div>
+        </div>
+
+        <div class="col s12 m4">
+          <div class="icon-block">
+            <h2 class="center grey-text"><i class="material-icons">panorama</i></h2>
+            <h5 class="center">Travel Notes & Beyond</h5>
+
+            <p class="light">Plan your travel styles, destinations, requirements and budget. Record your experience, feelings, photos and foot prints. Keep your accounts and track bills. DonkeyDokie helps to make your trips organized and enjoyable.</p>
+          </div>
+        </div>
+
+        <div class="col s12 m4">
+          <div class="icon-block">
+            <h2 class="center grey-text"><i class="material-icons">share</i></h2>
+            <h5 class="center">Sharing & Networking</h5>
+
+            <p class="light">Traveling is one of the best way to make friends. Chat with your compaions conveniently. Share your travel notes on one click. Get inspired and engaged by exploring others' ideas and experience.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <div class="parallax-container valign-wrapper">
+    <div class="section no-pad-bot">
+      <div class="container">
+        <div class="row center">
+          <h5 class="col s12 light magic_stroke">Record your experience, feelings, photos and foot prints</h5>
+        </div>
+      </div>
+    </div>
+    <div class="parallax"><img src="static/images/background2.jpg" alt="Unsplashed background img 2"></div>
+  </div>
+
+  <div class="container">
+    <div class="section">
+
+      <div class="row">
+        <div class="col s12 center">
+          <h3><i class="mdi-content-send brown-text"></i></h3>
+          <h4>About Us</h4>
+          <p class="left-align light">DonkeyDokie is a comprehensive platform for college students to find their travel compaions. 
+            Here you can post trips, choose your own compaions and apply for other students' trips. You can also maintain and manage your trips by recording 
+          your experience and tracking your bills. It is an ideal way to get acquainted with college students around the world by sharing your travel notes with others 
+        and exchaging your ideas.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <div class="parallax-container valign-wrapper">
+    <div class="section no-pad-bot">
+      <div class="container">
+        <div class="row center">
+          <h5 class="col s12 light magic_stroke">{{active_user_number}} Users have started their journeys in Donkeydokie, share your trips and make friends!</h5>
+        </div>
+      </div>
+    </div>
+    <div class="parallax"><img src="static/images/background3.jpg" alt="Unsplashed background img 3"></div>
+  </div>
+
+  <footer class="page-footer grey darken-2">
+    <div class="container">
+      <div class="row">
+        <div class="col l6 s12">
+          <h5 class="white-text">Donkeydokie</h5>
+          <p class="grey-text text-lighten-4">We are a team of college students working on this project like it's our full time job. Any amount would help support and continue development on this project and is greatly appreciated.</p>
+
+        </div>
+        <div class="col l3 s12">
+          <h5 class="white-text">About</h5>
+          <ul>
+            <li><a class="white-text" href="#!">Hanfei Lin</a></li>
+            <li><a class="white-text" href="#!">Ce Guo</a></li>
+            <li><a class="white-text" href="#!">Yifan Hao</a></li>
+            <li><a class="white-text" href="#!">Ziyu Zhou</a></li>
+          </ul>
+        </div>
+        <div class="col l3 s12">
+          <h5 class="white-text">Contact</h5>
+          <ul>
+            <li><a class="white-text" href="#!">hanfeil2@illinois.edu</a></li>
+            <li><a class="white-text" href="#!">ceguo2@illinois.edu</a></li>
+            <li><a class="white-text" href="#!">haoyifan@umich.edu</a></li>
+            <li><a class="white-text" href="#!">ziyuz2@illinois.edu</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-copyright grey darken-3">
+      <div class="container">
+      Made by lgHz
+      </div>
+    </div>
+  </footer>
+
+
+  <!--  Scripts-->
+  <!-- <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script> -->
+  <script src="static/js/lib/vue.min.js"></script>
+  <script src="static/js/lib/jquery.min.js"></script>
+  <script src="static/js/lib/materialize.min.js"></script>
+  <script src="static/js/lib/materialize.js"></script>
+  <script src="static/js/lib/init.js"></script>
+  
+  <script src="static/js/controllers/index.js"></script>
+  </body>
+</html>

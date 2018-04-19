@@ -1,0 +1,123 @@
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+.content {
+    flex: 1 0 auto;
+    margin: 40px;
+}
+
+.background {
+    width: 100%;
+}
+
+.header {
+    margin-bottom: 5px;
+    border: 2px solid white;
+}
+
+.login_name {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.relative {
+    position: relative !important;
+}
+
+.absolute {
+    position: absolute !important;
+}
+
+#map {
+    height: 600px; 
+    margin: 0 auto; 
+}
+
+.magic_stroke{
+    color:#f9f9f9 !important; 
+    text-shadow: 0.1em 0.1em 0.8em #555!important;
+}
+
+.sub_title{
+    font-size: 48px;
+    color: #555;
+}
+
+.search{
+    border-bottom: 1px solid #ddd;
+    width: 300px;
+}
+
+.search_nav{
+    box-shadow: none;
+    width: 300px;
+    float: right;
+}
+
+.detail{
+    font-size: 18px;
+    font-family: sans-serif;
+    font-weight: bold;
+    color: #555;
+}
+
+.sender{
+    background-color:#ffe894;
+    float: right;
+    box-shadow:2px 2px 4px #888;
+    -webkit-box-shadow:2px 2px 4px #888;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.receiver{
+    background-color: #fbfbfb;
+    float: left;
+    box-shadow:2px 2px 4px #888;
+    -webkit-box-shadow:2px 2px 4px #888;
+    border-radius: 5px;
+    padding: 5px;
+    font-size: 18px;
+}
+
+.sender::before{
+    content: ' ';
+    position: absolute;
+    height: 0;
+    width: 0;
+    top: 40px;
+    border: 20px solid;
+    left: -40px;
+    border-color: transparent #f9f9f9 #f9f9f9 transparent;
+}
+
+.sender::after{
+    content: ' ';
+    position: absolute;
+    height: 0;
+    width: 0;
+    top: 47px;
+    border: 14px solid;
+    left: -28px;
+    border-color: transparent #f9f9f9 #f9f9f9 transparent;
+}
+
+.sender-img{
+    float: right;
+    width: 5%;
+    margin-left: 15px;
+    box-shadow:2px 2px 4px #888;
+    -webkit-box-shadow:2px 2px 4px #888;
+    font-size: 18px;
+}
+
+.receiver-img{
+    float: left;
+    width: 5%;
+    margin-right: 15px;
+    box-shadow:2px 2px 4px #888;
+    -webkit-box-shadow:2px 2px 4px #888;
+}

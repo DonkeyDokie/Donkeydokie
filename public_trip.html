@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>DonkeyDokie</title>
+
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="static/CSS/lib/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="static/CSS/lib/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="static/CSS/lib/export.css" type="text/css" media="all" />
+  <link href="static/CSS/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+</head>
+<body id="public_trip_app">
+
+    <dd-header v-bind:url="url"></dd-header>
+
+    <div class="content">
+        <div class="row">
+
+                <div id="map" class="col s8">
+                    <span>Welcome! {{user_login_name}}</span>
+                </div>
+
+                <div id="public_trip" class="col s4">
+                    <span class="sub_title">Recommendations</span>
+                    <ul class="collapsible" style="overflow:scroll; height:700px">
+                        <li v-for="trip in public_trip">
+                            <div class="collapsible-header"><i class="material-icons">{{trip.TravelStyleIcon}}</i>{{trip.Title}}</div>
+                            <div class="collapsible-body">
+                                    <img class="materialboxed" style="width:100%; -webkit-box-shadow:3px 3px 5px rgba(33,33,33,0.7); box-shadow:3px 3px 5px rgba(33,33,33,0.7); border-radius:5px; border:5px solid #fff" src="{{trip.ImgUrl}}">
+                                    <br>
+                                    <div style="border:2px dashed #dedada; border-radius:5px">
+                                            <span class="detail">Travel Style: </span><i class="material-icons">{{trip.TravelStyleIcon}}</i>
+                                            <br>
+                                            <span class="detail">Start Date: </span><span>{{trip.StartDate}}</span>
+                                            <br>
+                                            <span class="detail">Days: </span><span>{{trip.Length}}</span>
+                                            <br>
+                                            <span class="detail">Location: </span><span>{{trip.Location}}</span>
+                                            <br>
+                                            <span class="detail">Description: </span><span>{{trip.TripDescription}}</span>
+                                            <br>
+                                            <span class="detail">Notes: </span><span>{{trip.Remarks}}</span>
+                                            <br>
+                                            <span class="detail">Requirements: </span><span>{{trip.Requirements}}</span>
+                                            <br>
+                                            <span class="detail">Budget: </span><span>{{trip.Budget}}</span>
+                                            <br>
+                                            <span class="detail">Participants: </span>
+                                            <ul>
+                                                <li v-for="i in trip.participants">
+                                                    <span>{{i.Name}}</span>
+                                                </li>
+                                            </ul>
+                                    </div>
+                                <a class="modal-action waves-effect waves-light btn blue lighten-2" style="margin-top: 10px; margin-bottom: 10px" href="javascript:void(0)" @click="onApplyClick(trip.TripID)">Apply</a>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <a class="modal-action waves-effect waves-light btn blue lighten-2" style="margin-top: 10px; margin-bottom: 10px" href="javascript:void(0)" @click="onPostTrip">Create a New Trip!</a>
+                    
+                    <div id="modal-detail" class="modal">
+                            <div class="modal-content">
+                                <div class="row">
+                                    <dd-detail v-bind:trip="tripDetail"></dd-detail>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="closeTripDetails">Close</a>
+                                <a class="modal-action waves-effect waves-light btn blue lighten-2" style="margin-top: 10px; margin-bottom: 10px" href="javascript:void(0)" @click="onApplyClick(tripDetail.TripID)">Apply</a>
+                            </div>
+                    </div>
+
+                    <div id="modal-apply" class="modal">
+                            <div class="modal-content">
+
+                                <div class="row">
+                                        <form class="col s12">
+                                        <div class="row">
+                                            <div class="input-field col s6">
+                                            <i class="material-icons prefix">mode_edit</i>
+                                            <textarea id="icon_prefix2" class="materialize-textarea" v-model="apply_message"></textarea>
+                                            <label for="icon_prefix2">Messages</label>
+                                            </div>
+                                        </div>
+                                        </form>
+                                    </div>
+
+                                <div class="row">
+                                    <span>{{message}}</span>
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onApplyCancel">Cancel</a>
+                                <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onApplySubmit">Submit</a>
+                            </div>
+                    </div>
+                    <div id="modal-public" class="modal">
+                            <div class="modal-content">
+                                <div class="row">
+                                    <form class="col s12">
+                                        <div class="row">
+                                            <div class="input-field col m6 s12">
+                                                <i class="material-icons prefix">title</i>
+                                                <input id="post_title" type="text" v-model="post_title">
+                                                <label for="title">Title</label>
+                                            </div>
+                                            
+                                            <div class="input-field col m6 s12">
+                                                <i class="material-icons prefix">perm_contact_calendar</i>
+                                                <input id="post_start_day" type="text" class="datepicker" v-model="post_start_day">
+                                                <label for="day">Start Date</label>
+                                            </div>
+                                            <div class="input-field col m6 s12">
+                                                <i class="material-icons prefix">av_timer</i>
+                                                <input id="post_length" type="text" v-model="post_length">
+                                                <label for="day">Days</label>
+                                            </div>
+                                            <div class="input-field col m6 s12" id="locationSelector">
+                                                <i class="material-icons prefix">edit_location</i>
+                                                <input id="post_location" type="text" v-model="post_location">
+                                                <label for="location">Location</label>
+                                            </div>
+                                            <div class="input-field col m6 s12">
+                                                <i class="material-icons prefix">edit</i>
+                                                <input id="post_description" type="text" v-model="post_description">
+                                                <label for="description">Description</label>
+                                            </div>
+                                            <div class="input-field col m6 s12">
+                                                <i class="material-icons prefix">book</i>
+                                                <input id="post_remarks" type="text" v-model="post_remarks">
+                                                <label for="remarks">Notes</label>
+                                            </div>
+                                            <div class="input-field col m6 s12">
+                                                <i class="material-icons prefix">burst_mode</i>
+                                                <input id="post_requirement" type="text" v-model="post_requirement">
+                                                <label for="requirement">Requirement</label>
+                                            </div>
+                                            <div class="input-field col m6 s12">
+                                                <i class="material-icons prefix">attach_money</i>
+                                                <input id="post_budget" type="text" v-model="post_budget">
+                                                <label for="budget">Budget</label>
+                                            </div>
+                                            <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+                                            <div style="width: 49%; float:right; ">
+                                                <div id='app' style="float:left; margin-left: 10px" v-for="(index,item) in travelStyleList">
+                                                    <input class="with-gap" type="radio" value="{{item.TravelStyleID}}" id="ts+{{index}}" v-model="post_travel_style">
+                                                    <label for="ts+{{index}}"><i class="material-icons">{{item.TravelStyleIcon}}</i></label>
+                                                </div>
+                                            </div>
+                                            <div class="switch" style="margin-left: 10px; margin-top: 30px; width: 50%;">
+                                                <label>
+                                                    Public
+                                                    <input type="checkbox" v-model="post_pp">
+                                                    <span class="lever"></span>
+                                                    Private
+                                                </label>
+                                            </div>     
+                                            <!-- </div>       -->
+                                            <br><br><br>                             
+                                            <div class="input-field col m6 s12">
+                                                <form action="#">
+                                                    <div class="file-field input-field">
+                                                    <div class="btn">
+                                                        <span>Upload Image</span>
+                                                        <input type="file" id="postImage">
+                                                    </div>
+                                                    <div class="file-path-wrapper">
+                                                        <input class="file-path validate" type="text">
+                                                    </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onPostSubmit">Submit</a>
+                                <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onPostCancel">Cancel</a>
+                            </div>
+                    </div>
+
+
+
+                    <div id="modal-message" class="modal">
+                            <div class="modal-content">
+                                <div class="row">
+                                    <span>{{message}}</span>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onCloseMessage">Ok</a>
+                            </div>
+                    </div>
+
+                    <div id="modal-apply-confirmed" class="modal">
+                        <div class="modal-content">
+                            <div class="row">
+                                <span>Make sure to apply to trip {{trip_title}}?</span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onApplySubmitConfirmed">Yes</a>
+                            <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onApplySubmitCancel">No</a>
+                        </div>
+                    </div>
+
+                    <div id="modal-post-confirmed" class="modal">
+                            <div class="modal-content">
+                                <div class="row">
+                                    <span>Make sure to post this trip?</span>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onPostSubmitConfirmed">Yes</a>
+                                <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onPostSubmitCancel">No</a>
+                            </div>
+                    </div>
+
+                </div>
+        </div>
+        <dd-search style="float:left"></dd-search>
+        <br><br><br><br>
+        
+        <hr><br>
+        <div class="row">
+            <ul>
+                <li v-for="trip in public_trip">
+                    <div class="col s2">
+                <div class="card" style="margin: 10px">
+                    <div class="card-image waves-effect waves-block waves-light" >
+                        <img class="activator" src="{{trip.ImgUrl}}">
+                    </div>
+                    <div class="card-content">
+                        <span class="card-title activator grey-text text-darken-4">{{trip.Title}}<i class="material-icons right">more_vert</i></span>
+                    </div>
+                    <div class="card-reveal">
+                        <span class="card-title grey-text text-darken-4"><i class="material-icons right">close</i>{{trip.Title}}</span>
+                        <p>{{trip.TripDescription}}</p>
+                        <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="openTripDetails(trip)">Details</a>
+                    </div>
+                </div>
+                </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <dd-footer></dd-footer>
+
+<script src="static/js/lib/ammap.js"></script>
+<script src="static/js/lib/worldLow.js"></script>
+<script src="static/js/lib/export.min.js"></script>
+<script src="static/js/lib/dark.js"></script>
+<script src="static/js/lib/vue.min.js"></script>
+<script src="static/js/lib/jquery.min.js"></script>
+<script src="static/js/lib/materialize.min.js"></script>
+<script src="static/js/lib/materialize.js"></script>
+
+<script src="static/js/components/dd_header.js"></script>
+<script src="static/js/components/dd_side_nav.js"></script>
+<script src="static/js/components/dd_footer.js"></script>
+<script src="static/js/components/dd_search.js"></script>
+<script src="static/js/components/dd_trip_detail.js"></script>
+
+<script src="static/js/controllers/public_trip.js"></script>
+<script src="static/js/controllers/mapData.js"></script>
+
+</body>
+</html>

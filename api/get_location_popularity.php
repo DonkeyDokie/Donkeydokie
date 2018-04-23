@@ -11,7 +11,7 @@ include '../credentials/credentials.php';
     die('Connection failed: ' . $conn->connect_error);
   }
 
-  $sql = "SELECT COUNT(Trips.TripID) AS count, LocationID AS Nation FROM Trips, At WHERE Trips.TripID = At.TripID GROUP BY At.LocationID";
+  $sql = "SELECT DISTINCT COUNT(Trips.TripID) AS count, LocationID AS Nation FROM Trips, At WHERE Trips.TripID = At.TripID GROUP BY At.LocationID";
   
   $result = $conn->query($sql);
   $resp = [

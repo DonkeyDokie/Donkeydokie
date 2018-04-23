@@ -1,41 +1,37 @@
 Vue.config.devtools  = true;
 
+var PAGE_LIMIT = 18;
+
 var public_trip_app = new Vue({
     el: '#public_trip_app',
     data: function() {
         return {
             public_trip: [],
-            trip_id: 0,
-            trip_title: "",
             apply_message: "",
-            post_title: "",
-            post_start_day: "",
-            post_length: "",
-            post_style: "",
-            post_loaction: "",
-            post_description: "",
-            post_remarks: "",
-            post_requirement: "",
-            post_budget: "",
-            post_travel_style: 0,
-            post_pp: "public",
+            newTrip: {},
             user_id: "",
             user_login_name: "",
             popularity: [],
             locationList: [],
+            showingTrips: [],
             message: "",
             url: "public_trip",
             tripDetail: "",
-            travelStyleList: []
+            travelStyleList: [],
+            showStyle: "Small",
+            curPage : 1,
+            totalPageNumber : 1,
+            pageList : [1],
+            recommendation: []
         }
     }, 
     ready: function() {
 
-        var _this = this;
         this.fetchUserID();
-        this.updateTripList();
-
+        this.initailNewTrip();
+    
         $('.modal').modal();
+        $('select').material_select();
 
         $('.datepicker').pickadate({
             format: 'yyyy-mm-dd',
@@ -47,7 +43,6 @@ var public_trip_app = new Vue({
             closeOnSelect: false // Close upon selecting a date,
         }); 
 
-        this.fetchUserID();
         var cookies = document.cookie.split('; ');
         var cookieObj = {};
         cookies.forEach(function(cookieStr) {
@@ -58,144 +53,109 @@ var public_trip_app = new Vue({
           }
         });
 
+        var _this = this;
+
         if (cookieObj.hasOwnProperty('DonkeyDokieAUTH')) {
           // display personal info
-          $.ajax({
-            method: 'POST',
-            url: 'api/auto_signin.php',
-            timeout: 30000,
-            success: function(resp) {
-              console.log("success auto login!");
-              if (!resp || resp.status !== 'success') {
-                location.href = '/';
-                return;
-              }
-              _this.login_name = resp.data.login_name;
-              _this.remakrs = resp.data.remarks;
-              _this.email = resp.data.email;
-              _this.name = resp.data.name;
-            },
-            error: function() { 
-              console.log("personal info display fail");
-              // location.href = '/'; 
-            }
-          });
+  
+            this.ajaxCall('api/auto_signin.php', 'POST', null, function callback(resp, me){
+                me.login_name = resp.data.login_name;
+                me.remakrs = resp.data.remarks;
+                me.email = resp.data.email;
+                me.name = resp.data.name;
+            });
+
         }
 
-        $.ajax({
-            method: 'POST',
-            url: 'api/get_travel_style.php',
-            timeout: 30000,
-            success: function(resp) {
-              console.log("success auto login!");
-              if (!resp || resp.status !== 'success') {
-                location.href = '/';
-                return;
-              }
-              _this.travelStyleList = resp.data;
-              for (ts in _this.travelStyleList){
-                 _this.travelStyleList[ts].isCheck = false;
-              }
-            },
-            error: function() { 
-              console.log("personal info display fail");
-              // location.href = '/'; 
+        this.ajaxCall('api/get_travel_style.php', 'POST', null, function callback(resp, me){
+            me.travelStyleList = resp.data;
+            for (ts in me.travelStyleList){
+               me.travelStyleList[ts].isCheck = false;
             }
-          });
+        });
 
-          $.ajax({
-            method: 'POST',
-            url: 'api/get_locations.php',
-            timeout: 30000,
-            success: function(resp) {
-              console.log("success auto login!");
-              if (!resp || resp.status !== 'success') {
-                location.href = '/';
-                return;
-              }
-              _this.locationList = resp.data;
-            },
-            error: function() { 
-              console.log("personal info display fail");
-              // location.href = '/'; 
-            }
-          });
-          $('select').material_select();
-          this.initialMap();
+        this.ajaxCall('api/get_locations.php', 'POST', null, 
+            function callback(resp, me){
+                me.locationList = resp.data;
+            });
 
+        $('select').material_select();
+        this.initialMap();
+        this.initialChart();
     },
     methods: {
-        updateTripList: function() {
-            var _this = this;
-            // ajax 
-            $.ajax({
-                // method: 'GET',
-                url: 'api/get_public_trip.php',
-                datatype:'json',
-                success: function(resp) {
 
-                    if (!resp || JSON.parse(resp).status !== "success") {
-                        _this.message = resp.message;
-                        return;
-                    }
-                    _this.public_trip = JSON.parse(resp).data;
-                    
-                    for (index in _this.public_trip){
-                        var url = _this.public_trip[index].ImgUrl;
-                        if (url[0] == "\""){
-                            _this.public_trip[index].ImgUrl = "\././" + url.substring(2, url.length - 1);
-                        } else if (url[0] == "."){
-                            _this.public_trip[index].ImgUrl = "\././" + url.substring(1, url.length);
-                        }
-                    }
-                },
-                error: function() { 
-                    console.log(resp);
+        updateTripList: function() {
+
+            var data = {
+                user_id : this.user_id
+            }
+
+            this.ajaxCall('api/get_public_trip.php', 'POST', data, function callback(resp, me){
+                
+                if (resp.data.acceptable.length == 0 && resp.data.unAcceptable.length == 0) return;
+
+                me.public_trip = [];
+
+                for (var trip in resp.data.acceptable){
+                    resp.data.acceptable[trip].acceptable = true;
+                    me.public_trip.push(resp.data.acceptable[trip]);
                 }
+                for (var trip in resp.data.unAcceptable){
+                    resp.data.unAcceptable[trip].acceptable = false;
+                    me.public_trip.push(resp.data.unAcceptable[trip]);
+                }
+                
+                me.showingTrips = [];
+
+                var count = 0;
+                for (index in me.public_trip){
+                    var url = me.public_trip[index].ImgUrl;
+                    me.public_trip[index].ImgUrl = "\././" + url.substring(1, url.length);
+                    count++;
+                }
+
+                me.totalPageNumber = Math.ceil(count / PAGE_LIMIT);
+                me.pageList = [];
+
+                for (i = 1; i <= me.totalPageNumber; i++){
+                    me.pageList.push(i);
+                }
+
+                me.$data.pageList = Object.assign({}, me.$data.pageList);
+                me.$data.public_trip = Object.assign({}, me.$data.public_trip);
+
+                for (var i = 0; i < PAGE_LIMIT; i++) {
+                    if (me.public_trip[i + (me.curPage - 1) * PAGE_LIMIT])
+                    me.showingTrips.push(me.public_trip[i + (me.curPage - 1) * PAGE_LIMIT]);
+                }
+                console.log(me.showingTrips)
             });
         },
         onApplyClick: function(id){
-            var _this = this;
-            _this.trip_id = id;
+            this.trip_id = id;
             $('#modal-apply').modal('open');
         },
         onApplyCancel: function(){
-            var _this = this;
-            _this.message = " ";
+            this.message = " ";
             $('#modal-apply').modal('close');
         },
         onApplySubmit: function(){
             $('#modal-apply-confirmed').modal('open');
         },
         onApplySubmitConfirmed: function(){
-            var _this = this;
-            // ajax 
-            $.ajax({
-                method: 'POST',
-                url: 'api/apply_trip.php',
-                datatype:'json',
-                data: {
-                    // Not sure where to retrieve user and trip id
-                    userID: _this.user_id,
-                    tripID: _this.trip_id,
-                    message: _this.apply_message
-                },
-                success: function(resp) {
-                    console.log(resp);
-                    if (!resp || resp.status !== "success") {
-                        _this.message = resp.message;
-                        return;
-                    }
-                    _this.message = resp.message;
-                    _this.apply_status = resp.data.apply_status;
-                    $('#modal-apply').modal('close');
-                },
-                error: function() {      
-                    console.log(resp);
-                }
+            var data = {
+                userID: this.user_id,
+                tripID: this.trip_id,
+                message: this.apply_message
+            }
+            this.ajaxCall('api/apply_trip.php', 'POST', data, function callback(resp, me){
+                me.message = resp.message;
+                me.apply_status = resp.data.apply_status;
+                $('#modal-message').modal('open');
+                $('#modal-apply-confirmed').modal('close');
+                $('#modal-apply').modal('close');
             });
-            $('#modal-apply-confirmed').modal('close');
-            $('#modal-message').modal('open');
         },
         onApplySubmitCancel: function(){
             $('#modal-apply-confirmed').modal('close');
@@ -210,107 +170,77 @@ var public_trip_app = new Vue({
             $('#modal-public').modal('close');
         },
         onPostSubmitConfirmed: function() {
-
             var _this = this;
-            var image = $(_this.$el).find('#postImage')[0].files[0];
-
-            var fd = new FormData();
-            fd.append('file',image);
-
+            
             // check form
-            if (_this.post_title == ""){
+            if (_this.newTrip.title == ""){
                 _this.message = "Please enter trip title!";
                 $('#modal-message').modal('open');
                 $('#modal-post-confirmed').modal('close');
                 return;
             }
-
-            if (_this.post_start_day == ""){
+            if (_this.newTrip.startDay == ""){
                 _this.message = "Please choose your start day!";
                 $('#modal-message').modal('open');
                 $('#modal-post-confirmed').modal('close');
                 return;
             }
-
-            if (_this.post_travel_style == ""){
+            if (_this.newTrip.travelStyle == ""){
                 _this.message = "Please choose travel style!";
                 $('#modal-message').modal('open');
                 $('#modal-post-confirmed').modal('close');
                 return;
             }
 
-            if (_this.post_location == ""){
+            if($('li.active.selected')[0]){
+                _this.newTrip.location = $('li.active.selected')[0].children[0].innerHTML;
+            } else {
                 _this.message = "Please choose your location!";
                 $('#modal-message').modal('open');
                 $('#modal-post-confirmed').modal('close');
                 return;
             }
-
-            var imgUrl = null;
             
-            $.ajax({
-                url: 'api/post_images.php',
-                method: 'POST',
-                processData:false,
-                contentType:false,
-                data: fd,
-                success: function(resp) {
-                    if (resp.status == "fail"){
-                        _this.upload_message = resp.message;
-                    } else {
-                        imgUrl = resp.data;
-                    }
-                    $.ajax({
-                        url: 'api/post_trip.php',
-                        method: 'POST',
-                        datatype: 'json',
-                        data: {
-                            title: _this.post_title,
-                            start_day: _this.post_start_day,
-                            length: _this.post_length,
-                            travel_style_id: _this.post_travel_style,
-                            travel_description: _this.post_description,
-                            remarks: _this.post_remarks,
-                            requirements: _this.post_requirement,
-                            budget: _this.post_budget,
-                            if_public: !_this.post_pp,
-                            location: _this.post_location,
-                            img: JSON.stringify(imgUrl)
-                        },
-                        success: function(resp) {
-                            _this.updateTripList();
-                            _this.post_title = "";
-                            _this.post_start_day = "";
-                            _this.post_length = "";
-                            _this.post_style = "";
-                            _this.post_loaction = "";
-                            _this.post_description = "";
-                            _this.post_remarks = "";
-                            _this.post_requirement = "";
-                            _this.post_budget = "";
-                            _this.post_travel_style = 0;
-                            _this.post_pp = "public";
-                            if (!resp || JSON.parse(resp).status != "success") {
-                                _this.message = "Something wrong...";
-                                $('#modal-post-confirmed').modal('close');
-                                $('#modal-message').modal('open');
-                                return;
-                            }
-                            _this.message = "Create Trip Success!";
-                            $('#modal-public').modal('close');
-                            $('#modal-post-confirmed').modal('close');
+            // generate image
+            var _this = this;
+            var image = $(_this.$el).find('#postImage')[0].files[0];
+            var fd = new FormData();
+            fd.append('file',image);
+            function callback(resp, me){
+                me.updateTripList();
+                // me.initailNewTrip();
+                me.message = resp.message;
+                $('#modal-public').modal('close');
+                $('#modal-post-confirmed').modal('close');
+                $('#modal-message').modal('open');
+            }
+            // post image and trip info
+            if (!image) {
+                _this.ajaxCall('api/post_trip.php', 'POST', _this.newTrip, callback);
+            } else {
+                $.ajax({
+                    url: 'api/post_images.php',
+                    method: 'POST',
+                    processData:false,
+                    contentType:false,
+                    data: fd,
+                    success: function(resp) {
+                        resp = JSON.parse(resp);
+                        if (resp.status == "fail"){
+                            _this.message = resp.message;
                             $('#modal-message').modal('open');
-                        },
-                        error: function(resp) {
-                            _this.message = "Server error";
-                            $('#modal-post-confirmed').modal('close');
-                            $('#modal-message').modal('open');
+                        } else {
+                            _this.newTrip.imgUrl = resp.data;
+                            _this.ajaxCall('api/post_trip.php', 'POST', _this.newTrip, callback);
                         }
-                    });
-                },
-                error: function(resp) {
-                }
-            });
+                    },
+                    error: function(resp) {
+                        _this.message = resp.message;
+                        $('#modal-message').modal('open');
+                    }
+                });
+            }
+
         },
         onPostSubmitCancel: function() {
             $('#modal-post-confirmed').modal('close');
@@ -319,54 +249,51 @@ var public_trip_app = new Vue({
             $('#modal-message').modal('close');
         },
         fetchUserID: function() {
-          var _this = this;
-          $.ajax({
-              url: 'api/get_user_id_from_cookie.php',
-              method: 'POST',
-              datatype: 'json',
-              success: function(resp) {
-                  console.log("fetch user succeed\n");
-                  if (!resp || resp.status !== "success") {
-                      _this.title = "Error";
-                      return;
-                  }
-                  _this.user_id = resp.data.user_id;
-                  _this.user_login_name = resp.data.user_login_name;
-              },
-              error: function() {
-                  console.log("fetch user fail\n");
-              }
-          });
+
+            var _this = this;
+
+            this.ajaxCall('api/get_user_id_from_cookie.php', 'POST', null, function callback(resp, me){
+                me.user_id = resp.data.user_id;
+                me.user_login_name = resp.data.user_login_name;
+
+                var data = {
+                    user_id: resp.data.user_id
+                }
+
+                _this.ajaxCall('api/recommend_engine/get_user_based_recom_trip.php', 'POST', data, function callback(resp, me){
+                    me.recommendation = resp.data;
+                    for (var trip in me.recommendation){
+                        var url = me.recommendation[trip].ImgUrl;
+                        me.recommendation[trip].ImgUrl = "\././" + url.substring(1, url.length);
+                    }
+                    me.$data.recommendation = Object.assign({}, me.$data.recommendation);
+                });
+
+                me.updateTripList();
+            });
+
         },
         initialMap: function(){
 
             var _this = this;
 
-            $.ajax({
-                // method: 'GET',
-                url: 'api/get_location_popularity.php',
-                datatype:'json',
-                success: function(resp) {
+            function drawMap(resp, me){
 
-                    if (!resp || resp.status !== "success") {
-                        _this.message = resp.message;
-                        return;
-                    }
-                    _this.popularity = resp.data;
+                    me.popularity = resp.data;
 
                     var data = [];
 
-                    for (i in _this.popularity){
+                    for (i in me.popularity){
                         var name = null, color = null;
                         for (item in mapData){
-                            if (mapData[item].code == _this.popularity[i].Nation){
+                            if (mapData[item].code == me.popularity[i].Nation){
                                 name = mapData[item].name;
                                 color = mapData[item].color;
                             }
                         }
                         var location = {
-                            code : _this.popularity[i].Nation,
-                            value : parseInt(_this.popularity[i].count),
+                            code : me.popularity[i].Nation,
+                            value : parseInt(me.popularity[i].count),
                             name : name,
                             color : color
                         }
@@ -438,23 +365,138 @@ var public_trip_app = new Vue({
                             "enabled": false
                         }
                     });
+            }
+
+            this.ajaxCall('api/get_location_popularity.php', 'POST', null, drawMap);
                         
-                },
-                error: function() { 
-                    console.log(resp);
+        },
+        initialChart: function(){
+            this.ajaxCall('api/get_trip_popularity.php', 'POST', null, function callback(resp, me){
+                for (var trip in resp.data){
+                    resp.data[trip].count = parseInt(resp.data[trip].count);
                 }
+                resp.data.sort(function(a,b){return b.count - a.count});
+                var count = 0,
+                    sorted = [],
+                    labels = [];
+
+                while (count < 10 && resp.data[count] && resp.data[count].count > 0){
+                    sorted.push(resp.data[count].count);
+                    labels.push(resp.data[count].Trip);
+                    count++;
+                }
+
+                var tripVis = document.getElementById("tripPopularVis");
+                var heightTotal = document.getElementById('recommendation').offsetHeight;
+                var heightMap = document.getElementById('map').offsetHeight;
+                $("#chart").height(heightTotal - heightMap);
+                document.getElementById("tripPopularVis").setAttribute("height",0);
+
+                var color = [
+                    '#cbe7fd'
+                ];
+
+                var tripData = {
+                    labels: labels,
+                    datasets: [{
+                        label: 'number of applicants',
+                        data: sorted,
+                        backgroundColor: color,
+                        borderColor:'#fff',
+                        borderWidth: 1
+                    }],
+                    scaleShowGridLines: false,
+                    scaleStepWidth : 0
+                }
+                
+                new Chart(tripVis, {
+                    type: 'horizontalBar',
+                    data: tripData,
+                    options: {
+                        title: {
+                            display: true,
+                            text: 'The most popular trips'
+                        },
+                        scales: {
+                            xAxes: [{
+                                ticks: {
+                                    min: 0
+                                },
+                                display: false
+                            }],
+                            yAxes: [{
+                                lineWidth: 0
+                            }]
+                        }
+                    }
+                });
             });
         },
         openTripDetails: function(trip){
             this.tripDetail = trip;
-            console.log(this.tripDetail);
             $('#modal-detail').modal('open');
         },
         closeTripDetails: function(){
             $('#modal-detail').modal('close');
         },
+        initailNewTrip: function(){
+            this.newTrip = {
+                title: "",
+                startDay: "",
+                length: "1",
+                location: "",
+                description: "",
+                remarks: "",
+                requirement: "",
+                budget: "",
+                travelStyle: "",
+                isPublic: true,
+                imgUrl: "../uploadfile/images/default.jpg"
+            }
+        },
+        changePage: function(pageNum) {
+            this.curPage = pageNum;
+        },
+        onChangeShowStyle: function(style){
+            this.showStyle = style;
+        },
+        ajaxCall: function(url, method, data, callback){
+
+            var _this = this;
+        
+            $.ajax({
+              method: method,
+              url: url,
+              datatype:'json',
+              data: data,
+              success: function(resp) {
+                if (!resp.status) resp = JSON.parse(resp);
+                if (!resp || resp.status !== 'success') {
+                  return;
+                }
+                callback(resp, _this);
+              },
+              error: function() { 
+                console.log(resp.message);
+              }
+            });
+    
+          },
         logOut: function() {
             document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
         }
-    }
+    },
+    watch: {
+        curPage: function(newVal) {
+          this.showingTrips = [];
+          var i = 0;
+          if (newVal < 1) newVal = 1;
+          if (newVal > this.totalPageNumber) newVal = this.totalPageNumber;
+          this.curPage = newVal;
+          while(i < PAGE_LIMIT && this.public_trip[i + (newVal - 1) * PAGE_LIMIT]){
+            this.showingTrips.push(this.public_trip[i + (newVal - 1) * PAGE_LIMIT]);
+            i++;
+          }
+        }
+      }
 })

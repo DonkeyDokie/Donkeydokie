@@ -18,8 +18,16 @@ include '../credentials/credentials.php';
   $sql = "UPDATE Applies SET ApplyStatus='".$status."' WHERE TripID = ".$trip_id." AND UserID=".$user_id."";
   $conn->query($sql);
 
+  if ($status == "Approved"){
+    $sql = "INSERT INTO Participate(UserID, TripID) VALUES (".$user_id. ", ".$trip_id.")";
+    $conn->query($sql);
+  }
+
+  $conn->query($sql);
+
   $resp = [
     'status' => 'success',
+    'message' => 'Update application succeed!'
   ];
   $conn->close();
   header('Content-Type: application/json');

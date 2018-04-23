@@ -1,4 +1,5 @@
 Vue.config.devtools = true;
+var PAGE_LIMIT = 10;
 
 var profile_app = new Vue({
     el: '#trips_app',
@@ -11,11 +12,12 @@ var profile_app = new Vue({
             current_trips: [],
             past_trips: [],
             showing_trips: [],
-            applicants: [],
             current_trip_id: "",
-            message: "",
             content: "future",
-            url: "trips"
+            url: "trips",
+            curPage : 1,
+            totalPageNumber : 1,
+            pageList : [1]
         }
     }, 
     ready: function() {
@@ -46,78 +48,55 @@ var profile_app = new Vue({
         var _this = this;
         if (cookieObj.hasOwnProperty('DonkeyDokieAUTH')) {
           // display personal info
-          $.ajax({
-            method: 'POST',
-            url: 'api/auto_signin.php',
-            timeout: 30000,
-            success: function(resp) {
-              console.log("success auto login!");
-              if (!resp || resp.status !== 'success') {
-                location.href = '/';
-                return;
-              }
-              _this.userInfo = resp.data;
-            },
-            error: function() { 
-              console.log("personal info display fail");
-              // location.href = '/'; 
-            }
-          });
 
+          this.ajaxCall('api/auto_signin.php', 'POST', null, function callback(resp, me){
+            me.userInfo = resp.data;
+            var url = me.userInfo.img;
+            me.userInfo.img = "\././" + url.substring(1, url.length);
+          });
           _this.updateTrips();
 
         }
     },
     methods: {
         fetchUserID: function() {
-            var _this = this;
-                $.ajax({
-                    url: 'api/get_user_id_from_cookie.php',
-                    method: 'POST',
-                    datatype: 'json',
-                    success: function(resp) {
-                        _this = this;
-                        console.log("fetch user succeed\n");
-                        if (!resp || resp.status !== "success") {
-                            _this.title = "Error";
-                            return;
-                        }
-                        _this.user_id = resp.data.user_id;
-                    },
-                    error: function() {
-                        console.log("fetch user fail\n");
-                    }
-                });
+
+            this.ajaxCall('api/get_user_id_from_cookie.php', 'POST', null, function callback(resp, me){
+                me.user_id = resp.data.user_id;
+            });
+
         },
         updateTrips: function() {
-            var _this = this;
 
-            //get 
-            $.ajax({
-                method: 'POST',
-                url: 'api/get_personal_trip.php',
-                timeout: 30000,
-                success: function(resp) {
-                    console.log("get personal trips info");
-                    if (!resp || resp.status !== 'success') {
-                    console.log(resp);
-                    location.href = '/';
-                    return;
+            var myDate = new Date();
+            var data = {
+                today_date: myDate.getFullYear().toString() + '-' + (myDate.getMonth() + 1).toString() + '-' + myDate.getDate().toString()
+            }
+
+            this.ajaxCall('api/get_personal_trip.php', 'POST', data, function callback(resp, me){
+                me.future_trips = resp.data.future;
+                me.current_trips = resp.data.current;
+                me.past_trips = resp.data.past;
+                me.changeContent();
+                for (index in me.future_trips){
+                    var url = me.future_trips[index].ImgUrl;
+                    if (url[0] == "\""){
+                        me.future_trips[index].ImgUrl = "\././" + url.substring(2, url.length - 1);
+                    } else if (url[0] == "."){
+                        me.future_trips[index].ImgUrl = "\././" + url.substring(1, url.length);
                     }
-                    _this.future_trips = resp.data;
-                    _this.changeContent();
-                    for (index in _this.future_trips){
-                        var url = _this.future_trips[index].ImgUrl;
-                        if (url[0] == "\""){
-                            _this.future_trips[index].ImgUrl = "\././" + url.substring(2, url.length - 1);
-                        } else if (url[0] == "."){
-                            _this.future_trips[index].ImgUrl = "\././" + url.substring(1, url.length);
-                        }
+                    var url = me.current_trips[index].ImgUrl;
+                    if (url[0] == "\""){
+                        me.current_trips[index].ImgUrl = "\././" + url.substring(2, url.length - 1);
+                    } else if (url[0] == "."){
+                        me.current_trips[index].ImgUrl = "\././" + url.substring(1, url.length);
                     }
-                },
-                error: function() { 
-                    console.log("personal trips display fail");
-                //   location.href = '/'; 
+                    var url = me.past_trips[index].ImgUrl;
+                    if (url[0] == "\""){
+                        me.past_trips[index].ImgUrl = "\././" + url.substring(2, url.length - 1);
+                    } else if (url[0] == "."){
+                        me.past_trips[index].ImgUrl = "\././" + url.substring(1, url.length);
+                    }
                 }
             });
 
@@ -136,9 +115,57 @@ var profile_app = new Vue({
                 _this.content = 'future';
                 _this.showing_trips = _this.future_trips;
             }
+            var count = 0;
+            for (index in _this.showing_trips){
+                count++;
+            }
+            _this.totalPageNumber = Math.ceil(count / PAGE_LIMIT);
+            _this.pageList = [];
+            for (i = 1; i <= _this.totalPageNumber; i++){
+                _this.pageList.push(i);
+            }
+            _this.$data.pageList = Object.assign({}, _this.$data.pageList);
+        },
+        ajaxCall: function(url, method, data, callback){
+
+            var _this = this;
+        
+            $.ajax({
+              method: method,
+              url: url,
+              datatype:'json',
+              data: data,
+              success: function(resp) {
+                if (!resp.status) resp = JSON.parse(resp);
+                if (!resp || resp.status !== 'success') {
+                  return;
+                }
+                callback(resp, _this);
+              },
+              error: function() { 
+                console.log(resp.message);
+              }
+            });
+    
+        },
+        changePage: function(pageNum) {
+            this.curPage = pageNum;
         },
         logOut: function() {
             document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        }
+    },
+    watch: {
+        curPage: function(newVal) {
+          this.showingTrips = [];
+          var i = 0;
+          if (newVal < 1) newVal = 1;
+          if (newVal > this.totalPageNumber) newVal = this.totalPageNumber;
+          this.curPage = newVal;
+          while(i < PAGE_LIMIT && this.showing_trips[i + (newVal - 1) * PAGE_LIMIT]){
+            this.showingTrips.push(this.showing_trips[i + (newVal - 1) * PAGE_LIMIT]);
+            i++;
+          }
         }
     }
 })

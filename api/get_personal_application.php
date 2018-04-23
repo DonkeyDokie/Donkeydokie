@@ -15,7 +15,7 @@ include '../credentials/credentials.php';
   $cookie = $_SERVER['HTTP_COOKIE'];
   $session_key= explode("=", $cookie)[1];
 
-  $sql = "SELECT *, U2.Name AS Hoster FROM Applies, User as U1, User as U2, Trips, Owns WHERE U1.UserID = Applies.UserID AND U2.UserID = Owns.UserID AND Owns.TripID = Trips.TripID AND U1.SessionKey = '".$session_key."' AND Applies.TripID = Trips.TripID";
+  $sql = "SELECT U1.UserID, U1.LoginName, U1.Name, U1.Email, U2.UserID AS HosterUserID, U2.Name AS HosterName, U2.LoginName AS HosterLoginName, U2.Email AS HosterEmail, Applies.ApplyStatus, Applies.TripID, Applies.ApplyTime, Applies.Message, Trips.Title FROM Applies, User as U1, User as U2, Trips, Owns WHERE U1.UserID = Applies.UserID AND U2.UserID = Owns.UserID AND Owns.TripID = Trips.TripID AND U1.SessionKey = '".$session_key."' AND Applies.TripID = Trips.TripID";
   
   $result = $conn->query($sql);
   $resp = [

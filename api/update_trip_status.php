@@ -24,12 +24,13 @@ include '../credentials/credentials.php';
     $sql3 = "UPDATE Applies SET ApplyStatus='Closed' WHERE TripID = ".$trip_id."";
     $conn->query($sql3);
   } else if ($is_open == 1) {
-    $sql3 = "UPDATE Applies SET ApplyStatus='Pending' WHERE TripID = ".$trip_id."";
+    $sql3 = "UPDATE Applies SET ApplyStatus='Pending' WHERE TripID = ".$trip_id." AND ApplyStatus='Closed'";
     $conn->query($sql3);
   }
 
   $resp = [
     'status' => 'success',
+    'message' => 'Update trip status succeed!'
   ];
   $conn->close();
   header('Content-Type: application/json');

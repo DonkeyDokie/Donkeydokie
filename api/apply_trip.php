@@ -27,10 +27,10 @@
     ];
   } else {
     $apply_status = 'Pending';  // Temp value.
-    $value = join("', '", [$user_id, $trip_id, $apply_status, date_create('now')->format('Y-m-d H:i:s'), $message]);
-    $sql = "INSERT INTO Applies (UserID, TripID, ApplyStatus, ApplyTime, Message) VALUES ('".$value."')";
+    $stmt = $conn->prepare("INSERT INTO Applies (UserID, TripID, ApplyStatus, ApplyTime, Message) VALUES (?,?,?,?,?)");
+    $stmt->bind_param("ddsss", $user_id, $trip_id, $apply_status, date_create('now')->format('Y-m-d H:i:s'), $message);
 
-    if ($conn->query($sql) === TRUE) {
+    if ($stmt->execute() === TRUE) {
       $sql = "SELECT * FROM Applies WHERE UserID = '$user_id' AND TripID = '$trip_id'";
       $result = $conn->query($sql);
       $row = $result->fetch_assoc();

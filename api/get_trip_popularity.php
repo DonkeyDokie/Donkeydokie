@@ -1,7 +1,7 @@
 <?php
   /*
   POST fields needed from front end:
-    null
+	user_id
   */
 
 include '../credentials/credentials.php';
@@ -11,10 +11,8 @@ include '../credentials/credentials.php';
     die('Connection failed: ' . $conn->connect_error);
   }
 
-  $trip_id = $_POST['trip_id'];
-
-  $sql = "SELECT User.UserID, User.Name FROM User, Trips, Participate  WHERE User.UserID = Participate.UserID AND Trips.TripId = Participate.TripID AND Trips.TripID = ".$trip_id."";
-
+  $sql = "SELECT DISTINCT COUNT(Applies.UserID) AS count, Title AS Trip FROM Trips, Applies WHERE Trips.TripID = Applies.TripID GROUP BY Applies.TripID";
+  
   $result = $conn->query($sql);
   $resp = [
     'status' => 'success',

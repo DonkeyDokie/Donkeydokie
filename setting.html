@@ -18,9 +18,52 @@
   
   <div class="content">
 
-  <h2>Setting page</h2>
+    <div class="row">
+      <div class="col s2">
+        <div id="avatar" class="avatar2"></div>
+      </div>
+      <div class="col s9">
+          <span class="setting-font">{{userInfo.login_name}}</span>
+          <br><br><br><br>
+          <span>Email: </span><span>{{userInfo.email}}</span>
+        </div>
+    </div>
+    <br>
+    <hr>
+    <br>
+    <div class="row">
+      <div class="col s4">
+        <canvas id="tripVis"></canvas>
+      </div>
+      <div class="col s4">
+        <canvas id="applicationVis"></canvas>
+      </div>
+      <div class="col s4">
+        <canvas id="styleVis"></canvas>
+      </div>
+    </div>
+    <br>
+    <hr>
+    <br>
+    <br>
+    <span class="sentence" >You have </span><span class="number">  {{userVis.apply}}</span><span class="sentence"> pending applications! </span>
+    <br>
+    <span class="sentence" >You have created </span><span class="number"></span><span class="number">  {{userVis.create}}</span><span class="sentence"> trips! </span>
+    <br>
+    <span class="sentence" >You have participated in </span><span class="number"></span><span class="number">  {{userVis.participate}}</span><span class="sentence"> trips! </span>
+    <br>
+    <br>
+    <span class="number" >{{approvePercentage}}%</span><span class="sentence"> of your application has been approved. </span>
+    <br>
+    <span class="number" >{{denyPercentage}}%</span><span class="sentence"> of your application has been denied. </span>
+    <br>
+    <span class="number" >{{pendingPercentage}}%</span><span class="sentence"> of your application is pending. </span>
+    <br>
+    <br>
+    <span class="number" >{{favorityStyle}}</span><span class="sentence"> is your favorite travel style. </span>
+    <br>
 
-</div>
+  </div>
 
 <dd-footer></dd-footer>
 
@@ -29,6 +72,7 @@
 <script src="static/js/lib/materialize.min.js"></script>
 <script src="static/js/lib/materialize.js"></script>
 <script src="static/js/lib/init.js"></script>
+<script src="static/js/lib/Chart.js"></script>
 
 <script src="static/js/components/dd_header.js"></script>
 <script src="static/js/components/dd_side_nav.js"></script>

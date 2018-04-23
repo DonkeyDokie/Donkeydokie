@@ -19,7 +19,7 @@ Vue.component('dd-side-nav', {
             <li>
                 <div class="user-view">
                     <div class="background"><img style="width:100%" src="static/images/background12.jpg" alt="Unsplashed background img 2"></div>
-                    <a href="#!user"><img class="circle header" src="static/images/head.jpg"></a>
+                    <a href="#!user"><img class="circle header" src={{user.img}}></a>
                     <a href="#!login_name"><span class="white-text login_name">{{user.login_name}}</span></a>
                     <a href="#!email"><span class="white-text email">{{user.email}}</span></a>
                 </div>
@@ -46,7 +46,8 @@ Vue.component('dd-side-nav', {
                         <div class="input-field col s12" style="width:100% !important">
                             <div id="msgWindow" style="height: 400px; overflow:auto; border: 2px dashed #64b6f7;border-radius: 10px;">
                                 <ul v-for="msg in historyMessage[parseInt(talkingTo.UserID)].message" style="margin:20px; margin-bottom:50px">
-                                    <img class="circle header avatar {{msg.status}}-img" src="{{talkingTo.ImgUrl}}">
+                                    <img v-if="msg.status == 'sender'" class="circle header avatar {{msg.status}}-img" src="{{user.img}}">
+                                    <img v-if="msg.status == 'receiver'" class="circle header avatar {{msg.status}}-img" src="{{talkingTo.ImgUrl}}">
                                     <li class="{{msg.status}}">{{msg.msg}}</li>
                                     <br>
                                 </ul>
@@ -68,7 +69,7 @@ Vue.component('dd-side-nav', {
         </div>
         `, 
     ready: function(){
-
+        
     },
     methods: {
 
@@ -173,7 +174,7 @@ Vue.component('dd-side-nav', {
             var _this = this;
 
             if (_this.socket) return;
-            var host = "ws://donkeydokie.gcsenyan.com:9000/Users/apple/Desktop/PHP-Websockets/server.php";
+            var host = "ws://donkeydokie.gcsenyan.com:9000";
             var socket = new WebSocket(host);
             
             _this.socket = socket;
@@ -243,6 +244,7 @@ Vue.component('dd-side-nav', {
         openChat: function(receiver){
             var _this = this;
             _this.talkingTo = receiver;
+
             $.ajax({
                 method: 'POST',
                 url: 'api/get_chat_messages.php',

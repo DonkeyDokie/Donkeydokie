@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" style="height:100%">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>DonkeyDokie</title>
+
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="static/CSS/lib/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="static/CSS/lib/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="static/CSS/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+</head>
+
+<body id="sign_up_info" style="height:100%">
+
+    <div class="carousel carousel-slider center" data-indicators="true" style="height:100%">
+
+        <a class="waves-effect waves-light btn" style="top:20px" @click="openTags()" >Why should I enter these information?</a>
+
+        <div class="carousel-item grey white-text" href="#one!">
+
+            <a id="menu" class="waves-effect waves-light btn btn-floating" style="position: fixed;right: 20px; bottom: 20px;" ><i class="material-icons">menu</i></a>
+
+            <!-- Tap Target Structure -->
+            <div class="tap-target" data-activates="menu">
+              <div class="tap-target-content">
+                <h5>Title</h5>
+                <p>A bunch of text</p>
+              </div>
+            </div>
+
+        </div>
+        <div class="carousel-item amber white-text" href="#two!">
+
+            <a id="menu" class="waves-effect waves-light btn btn-floating" style="position: fixed;right: 20px; bottom: 20px;" ><i class="material-icons">menu</i></a>
+
+            <!-- Tap Target Structure -->
+            <div class="tap-target" data-activates="menu">
+              <div class="tap-target-content">
+                <h5>Title</h5>
+                <p>A bunch of text</p>
+              </div>
+            </div>
+
+        </div>
+        <div class="carousel-item green white-text" href="#three!">
+
+            <a id="menu" class="waves-effect waves-light btn btn-floating" style="position: fixed;right: 20px; bottom: 20px;" ><i class="material-icons">menu</i></a>
+
+            <!-- Tap Target Structure -->
+            <div class="tap-target" data-activates="menu">
+              <div class="tap-target-content">
+                <h5>Title</h5>
+                <p>A bunch of text</p>
+              </div>
+            </div>
+
+        </div>
+        <div class="carousel-item blue white-text" href="#four!">
+
+          <div class="carousel-fixed-item center" style="top:50%">
+              <a class="btn waves-effect white grey-text darken-text-2" href="setting.html">Start!</a>
+            </div>
+        </div>
+      </div>
+
+</div>
+
+<script src="static/js/lib/vue.min.js"></script>
+<script src="static/js/lib/jquery.min.js"></script>
+<script src="static/js/lib/materialize.min.js"></script>
+<script src="static/js/lib/materialize.js"></script>
+<script src="static/js/lib/init.js"></script>
+
+<script src="static/js/components/dd_header.js"></script>
+<script src="static/js/components/dd_side_nav.js"></script>
+<script src="static/js/components/dd_footer.js"></script>
+<script src="static/js/components/dd_search.js"></script>
+<script src="static/js/components/dd_trip_detail.js"></script>
+
+<script src="static/js/controllers/sign_up_info.js"></script>
+
+</body>
+</html>
+

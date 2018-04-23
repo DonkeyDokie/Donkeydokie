@@ -14,7 +14,7 @@
 
 <body id="posts_app">
 
-  <dd-header v-bind:url="url"></dd-header>
+  <dd-header :url="url"></dd-header>
   <dd-side-nav :user="userInfo"></dd-side-nav>
   
   <div class="content">
@@ -36,7 +36,7 @@
     </div>
 
     <ul class="collapsible">
-      <li v-for="trip in showing_trips">
+        <li v-for="trip in showing_trips">
           <div class="collapsible-header"><i class="material-icons">{{trip.TravelStyleIcon}}</i>{{trip.Title}}</div>
           <div class="collapsible-body  relative">
             <dd-detail v-bind:trip="trip"></dd-detail>
@@ -54,21 +54,23 @@
                   </ul>
               </div>
             </div>
-      </li>
-  </ul>
+        </li>
+    </ul>
 
-  <div id="modal-applicants" class="modal">
+    <div id="modal-applicants" class="modal">
         <div class="modal-content">
             <div class="row">
               <ul class="collection">
                 <li class="collection-item avatar" v-for="applicant in applicants">
                     <img src="static/images/head.jpg" alt="" class="circle header">
-                    <span class="title text-grey">{{applicant.Name}}</span>
+                    <span class="title text-grey">{{applicant.LoginName}}</span>
+                    <br>
+                    <span class="title text-grey">{{applicant.Email}}</span>
                     <p>
                       {{applicant.Message}}
                     </p>
-                    <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="acceptApplicant(applicant.UserID)">Accept</a>
-                    <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="denyApplicant(applicant.UserID)">Deny</a>
+                    <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onAcceptOpen(applicant.UserID)">Accept</a>
+                    <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onDenyOpen(applicant.UserID)">Deny</a>
                   </li>
               </ul>
             </div>
@@ -90,29 +92,53 @@
       </div>
   </div>
 
-  <div id="modal-open" class="modal">
-    <div class="modal-content">
-        <div class="row">
-          <span>Are you sure you want to reopen this trip?</span>
+    <div id="modal-open" class="modal">
+        <div class="modal-content">
+            <div class="row">
+            <span>Are you sure you want to reopen this trip?</span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="openTrip">Reopen it</a>
+            <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onOpenCancel">Cancel</a>
         </div>
     </div>
-    <div class="modal-footer">
-        <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="openTrip">Reopen it</a>
-        <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onOpenCancel">Cancel</a>
-    </div>
-</div>
 
-  <div id="modal-close" class="modal">
-    <div class="modal-content">
-        <div class="row">
-          <span>Are you sure you want to close this trip?</span>
+    <div id="modal-close" class="modal">
+        <div class="modal-content">
+            <div class="row">
+            <span>Are you sure you want to close this trip?</span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="closeTrip">Close it</a>
+            <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onCloseCancel">Cancel</a>
         </div>
     </div>
-    <div class="modal-footer">
-        <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="closeTrip">Close it</a>
-        <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onCloseCancel">Cancel</a>
+
+    <div id="modal-accept" class="modal">
+            <div class="modal-content">
+                <div class="row">
+                  <span>Are you sure you want to accept this applicant?</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="acceptApplicant()">Yes</a>
+                <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onAcceptCancel">Wait a minite...</a>
+            </div>
+        </div>
+
+    <div id="modal-deny" class="modal">
+        <div class="modal-content">
+            <div class="row">
+              <span>Are you sure you want to deny this applicant?</span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="denyApplicant()">Yes</a>
+            <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onDenyCancel">Wait a minite...</a>
+        </div>
     </div>
-</div>
 
   <div id="modal-edit" class="modal">
       <div class="modal-content">
@@ -126,8 +152,9 @@
                     <label for="days" data-error="wrong" data-success="right">Days</label>
                 </div>
                 <div class="input-field col s6">
-                        <input id="edit_notes" placeholder="Placeholder" type="text" class="validate" v-model="on_edit_trip.Location" value={{on_edit_trip.Location}}>
-                        <label for="locations" data-error="wrong" data-success="right">Location</label>
+                        <!-- <input id="edit_notes" placeholder="Placeholder" type="text" class="validate" v-model="on_edit_trip.Location" value={{on_edit_trip.Location}}>
+                        <label for="locations" data-error="wrong" data-success="right">Location</label> -->
+                        <dd-selector></dd-selector>
                     </div>
               <div class="input-field col s6">
                   <input id="edit_travel_style" placeholder="Placeholder" type="text" class="validate" v-model="on_edit_trip.TravelStyleID" value={{on_edit_trip.TravelStyleID}}>
@@ -185,6 +212,22 @@
         </div>
     </div>
 
+    <div class="row">
+            <div class="col s6 offset-s3 pagination-box">
+              <ul class="pagination">
+                <li :class="{ disabled: curPage === 1 }">
+                  <a href="javascript:void(0)" @click="changePage(curPage - 1)"><i class="material-icons">chevron_left</i></a>
+                </li>
+                <li v-for="num in pageList" :class="{ active: num === curPage, 'blue-grey': num === curPage, 'darken-3': num === curPage }">
+                  <a href="javascript:void(0)" @click="changePage(num)">{{ num }}</a>
+                </li>
+                <li :class="{ disabled: curPage === totalPageNumber }">
+                  <a href="javascript:void(0)" @click="changePage(curPage + 1)"><i class="material-icons">chevron_right</i></a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
 </div>
 
 <dd-footer></dd-footer>
@@ -200,6 +243,7 @@
 <script src="static/js/components/dd_footer.js"></script>
 <script src="static/js/components/dd_search.js"></script>
 <script src="static/js/components/dd_trip_detail.js"></script>
+<script src="static/js/components/dd_selector.js"></script>
 
 <script src="static/js/controllers/posts.js"></script>
 

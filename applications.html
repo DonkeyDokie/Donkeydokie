@@ -37,15 +37,15 @@
                 <i class="material-icons" style="color:{{application.color}}">{{application.statusIcon}}</i>
                 {{application.Title}}</div>
             <div class="collapsible-body">
-                <span>Hoster: </span><span>{{application.Hoster}}</span>
+                <span class="detail">Hoster: </span><span>{{application.HosterLoginName}}</span>
                 <br>
-                <span>Status: </span><span>{{application.ApplyStatus}}</span>
+                <span class="detail">Contact: </span><span>{{application.HosterEmail}}</span>
                 <br>
-                <span>Apply Time: </span><span>{{application.ApplyTime}}</span>
+                <span class="detail">Status: </span><span>{{application.ApplyStatus}}</span>
                 <br>
-                <span>Expire Time: </span><span>{{application.ExpireTime}}</span>
+                <span class="detail">Apply Time: </span><span>{{application.ApplyTime}}</span>
                 <br>
-                <span>Notes: </span><span>{{application.Remarks}}</span>
+                <span class="detail">Message: </span><span>{{application.Message}}</span>
                 <br>
                 <a class="modal-action waves-effect waves-light btn blue lighten-2 {{application.buttonStatus}}" style="margin-top: 10px; margin-bottom: 10px" href="javascript:void(0)" @click="onDeleteOpen(application.TripID)">Delete</a>
             </div>
@@ -63,6 +63,33 @@
                 <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onDeleteClose">Cancel</a>
             </div>
     </div>
+
+    <div id="modal-message" class="modal">
+            <div class="modal-content">
+                <div class="row">
+                    <span>{{message}}</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onCloseMessage">Ok</a>
+            </div>
+    </div>
+
+    <div class="row">
+            <div class="col s6 offset-s3 pagination-box">
+              <ul class="pagination">
+                <li :class="{ disabled: curPage === 1 }">
+                  <a href="javascript:void(0)" @click="changePage(curPage - 1)"><i class="material-icons">chevron_left</i></a>
+                </li>
+                <li v-for="num in pageList" :class="{ active: num === curPage, 'blue-grey': num === curPage, 'darken-3': num === curPage }">
+                  <a href="javascript:void(0)" @click="changePage(num)">{{ num }}</a>
+                </li>
+                <li :class="{ disabled: curPage === totalPageNumber }">
+                  <a href="javascript:void(0)" @click="changePage(curPage + 1)"><i class="material-icons">chevron_right</i></a>
+                </li>
+              </ul>
+            </div>
+          </div>
 
 </div>
 

@@ -25,7 +25,8 @@ include '../credentials/credentials.php';
           'remarks' => $row['Remarks'],
           'name' => $row['Name'],
           'email' => $row['Email'],
-          'user_id' => $row['UserID']
+          'user_id' => $row['UserID'],
+          'img' => $row['ImgUrl']
         ]
     ];
 

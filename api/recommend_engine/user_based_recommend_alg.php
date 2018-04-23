@@ -1,25 +1,8 @@
 <?php
 
-class Recommend {
+class userBasedRecommend {
 
-    // public function get_score() {
-    //     /**
-    //      * Compute score for all trips related to a user.
-    //      * Need to decide what kind of formula to use.
-    //      * 
-    //      * The score array should look like this:
-    //      * "user_1" => array("trip_1" => 2.5, "trip_2" => 3.5, ...)
-    //      * 
-    //      * The preferences array shoud look like this:
-    //      * array (
-    //      *      "user_1" => array("trip_1" => 2.5, "trip_2" => 3.5, ...),
-    //      *      "user_2" => array("trip_4" => 5, "trip_1" => 1, ...),
-    //      *      ...
-    //      * )
-    //      */
-    // }
-
-    public function get_user_similarity($preferences, $user_1, $user_2) {
+    private function get_user_similarity($preferences, $user_1, $user_2) {
         $common_trip = array();
         $dist = 0;
         $similarity = 0;

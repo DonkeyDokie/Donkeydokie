@@ -19,14 +19,21 @@
     <div class="content">
         <div class="row">
 
-                <div id="map" class="col s8">
+            <div class="col s7">
+                <div id="map">
                     <span>Welcome! {{user_login_name}}</span>
                 </div>
+                <div id="chart">
+                    <canvas id="tripPopularVis"></canvas>
+                </div>
+            </div>
 
-                <div id="public_trip" class="col s4">
+
+                <div id="recommendation" class="col s4 offset-s1">
                     <span class="sub_title">Recommendations</span>
-                    <ul class="collapsible" style="overflow:scroll; height:700px">
-                        <li v-for="trip in public_trip">
+                    
+                    <ul class="collapsible" style="overflow:scroll; height:700px; border: none !important">
+                        <li v-for="trip in recommendation">
                             <div class="collapsible-header"><i class="material-icons">{{trip.TravelStyleIcon}}</i>{{trip.Title}}</div>
                             <div class="collapsible-body">
                                     <img class="materialboxed" style="width:100%; -webkit-box-shadow:3px 3px 5px rgba(33,33,33,0.7); box-shadow:3px 3px 5px rgba(33,33,33,0.7); border-radius:5px; border:5px solid #fff" src="{{trip.ImgUrl}}">
@@ -59,8 +66,7 @@
                             </div>
                         </li>
                     </ul>
-
-                    <a class="modal-action waves-effect waves-light btn blue lighten-2" style="margin-top: 10px; margin-bottom: 10px" href="javascript:void(0)" @click="onPostTrip">Create a New Trip!</a>
+                    <a class="modal-action waves-effect waves-light btn" style="margin-top: 10px; margin-bottom: 10px; background-color: #ee6e73" href="javascript:void(0)" @click="onPostTrip">Create a New Trip!</a>
                     
                     <div id="modal-detail" class="modal">
                             <div class="modal-content">
@@ -70,7 +76,7 @@
                             </div>
                             <div class="modal-footer">
                                 <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="closeTripDetails">Close</a>
-                                <a class="modal-action waves-effect waves-light btn blue lighten-2" style="margin-top: 10px; margin-bottom: 10px" href="javascript:void(0)" @click="onApplyClick(tripDetail.TripID)">Apply</a>
+                                <a class="modal-action waves-effect waves-light btn blue lighten-2" :class="{ disabled: !tripDetail.acceptable}" style="margin-top: 10px; margin-bottom: 10px" href="javascript:void(0)" @click="onApplyClick(tripDetail.TripID)">Apply</a>
                             </div>
                     </div>
 
@@ -88,10 +94,6 @@
                                         </div>
                                         </form>
                                     </div>
-
-                                <div class="row">
-                                    <span>{{message}}</span>
-                                </div>
                             </div>
 
                             <div class="modal-footer">
@@ -105,59 +107,56 @@
                                     <form class="col s12">
                                         <div class="row">
                                             <div class="input-field col m6 s12">
-                                                <i class="material-icons prefix">title</i>
-                                                <input id="post_title" type="text" v-model="post_title">
+                                                <i class="material-icons prefix" style="color:#64b6f7">title</i>
+                                                <input id="post_title" type="text" v-model="newTrip.title">
                                                 <label for="title">Title</label>
                                             </div>
-                                            
+
                                             <div class="input-field col m6 s12">
-                                                <i class="material-icons prefix">perm_contact_calendar</i>
-                                                <input id="post_start_day" type="text" class="datepicker" v-model="post_start_day">
+                                                <i class="material-icons prefix" style="color:#64b6f7">perm_contact_calendar</i>
+                                                <input id="post_start_day" type="text" class="datepicker" v-model="newTrip.startDay">
                                                 <label for="day">Start Date</label>
                                             </div>
                                             <div class="input-field col m6 s12">
-                                                <i class="material-icons prefix">av_timer</i>
-                                                <input id="post_length" type="text" v-model="post_length">
+                                                <i class="material-icons prefix" style="color:#64b6f7">av_timer</i>
+                                                <input id="post_length" type="text" v-model="newTrip.length">
                                                 <label for="day">Days</label>
                                             </div>
-                                            <div class="input-field col m6 s12" id="locationSelector">
-                                                <i class="material-icons prefix">edit_location</i>
-                                                <input id="post_location" type="text" v-model="post_location">
-                                                <label for="location">Location</label>
+                                            <div class="col m6 s12 input-field">
+                                                <dd-selector></dd-selector>
                                             </div>
                                             <div class="input-field col m6 s12">
-                                                <i class="material-icons prefix">edit</i>
-                                                <input id="post_description" type="text" v-model="post_description">
+                                                <i class="material-icons prefix" style="color:#64b6f7">edit</i>
+                                                <input id="post_description" type="text" v-model="newTrip.description">
                                                 <label for="description">Description</label>
                                             </div>
                                             <div class="input-field col m6 s12">
-                                                <i class="material-icons prefix">book</i>
-                                                <input id="post_remarks" type="text" v-model="post_remarks">
+                                                <i class="material-icons prefix" style="color:#64b6f7">book</i>
+                                                <input id="post_remarks" type="text" v-model="newTrip.remarks">
                                                 <label for="remarks">Notes</label>
                                             </div>
                                             <div class="input-field col m6 s12">
-                                                <i class="material-icons prefix">burst_mode</i>
-                                                <input id="post_requirement" type="text" v-model="post_requirement">
+                                                <i class="material-icons prefix" style="color:#64b6f7">burst_mode</i>
+                                                <input id="post_requirement" type="text" v-model="newTrip.requirement">
                                                 <label for="requirement">Requirement</label>
                                             </div>
                                             <div class="input-field col m6 s12">
-                                                <i class="material-icons prefix">attach_money</i>
-                                                <input id="post_budget" type="text" v-model="post_budget">
+                                                <i class="material-icons prefix" style="color:#64b6f7">attach_money</i>
+                                                <input id="post_budget" type="text" v-model="newTrip.budget">
                                                 <label for="budget">Budget</label>
                                             </div>
                                             <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
                                             <div style="width: 49%; float:right; ">
                                                 <div id='app' style="float:left; margin-left: 10px" v-for="(index,item) in travelStyleList">
-                                                    <input class="with-gap" type="radio" value="{{item.TravelStyleID}}" id="ts+{{index}}" v-model="post_travel_style">
+                                                    <input class="with-gap" type="radio" value="{{item.TravelStyleID}}" id="ts+{{index}}" v-model="newTrip.travelStyle">
                                                     <label for="ts+{{index}}"><i class="material-icons">{{item.TravelStyleIcon}}</i></label>
                                                 </div>
                                             </div>
                                             <div class="switch" style="margin-left: 10px; margin-top: 30px; width: 50%;">
                                                 <label>
                                                     Public
-                                                    <input type="checkbox" v-model="post_pp">
+                                                    <input type="checkbox" v-model="newTrip.isPublic" checked>
                                                     <span class="lever"></span>
-                                                    Private
                                                 </label>
                                             </div>     
                                             <!-- </div>       -->
@@ -185,8 +184,6 @@
                             </div>
                     </div>
 
-
-
                     <div id="modal-message" class="modal">
                             <div class="modal-content">
                                 <div class="row">
@@ -201,7 +198,7 @@
                     <div id="modal-apply-confirmed" class="modal">
                         <div class="modal-content">
                             <div class="row">
-                                <span>Make sure to apply to trip {{trip_title}}?</span>
+                                <span>Make sure to apply to trip?</span>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -224,24 +221,35 @@
 
                 </div>
         </div>
-        <dd-search style="float:left"></dd-search>
-        <br><br><br><br>
+
+        <div class="row">
+            <div class="col s2" style="position: relative; width: 200px; margin-bottom: -60px;float:right">
+            <ul id="dropdown2" class="dropdown-content">
+                <li><a href="#!" v-on:click="onChangeShowStyle('Small')">Small</a></li>
+                <li><a href="#!" v-on:click="onChangeShowStyle('Medium')">Medium</a></li>
+                <li><a href="#!" v-on:click="onChangeShowStyle('Large')">Large</a></li>
+            </ul>
+            <a class="btn dropdown-button" style="margin-bottom: -60px" href="#!" data-activates="dropdown2">{{showStyle}}<i class="material-icons right">arrow_drop_down</i></a>
+            </div> 
+
+            <dd-search class="col s2 offset-by-10" style="background-color:#fff; float:left"></dd-search>
+        </div>
         
         <hr><br>
-        <div class="row">
+        <div class="row" style="margin-bottom: 100px">
             <ul>
-                <li v-for="trip in public_trip">
-                    <div class="col s2">
-                <div class="card" style="margin: 10px">
+                <li v-for="trip in showingTrips">
+                    <div class="col s2" :class="{s2: showStyle == 'Small', s4: showStyle == 'Medium', s12: showStyle == 'Large'}" style="padding:none !important">
+                <div class="card" style="margin: 15px">
                     <div class="card-image waves-effect waves-block waves-light" >
                         <img class="activator" src="{{trip.ImgUrl}}">
                     </div>
                     <div class="card-content">
-                        <span class="card-title activator grey-text text-darken-4">{{trip.Title}}<i class="material-icons right">more_vert</i></span>
+                        <span class="card-title activator grey-text text-darken-4" style="font-weight: normal">{{trip.Title}}<i class="material-icons right">more_vert</i></span>
                     </div>
                     <div class="card-reveal">
-                        <span class="card-title grey-text text-darken-4"><i class="material-icons right">close</i>{{trip.Title}}</span>
-                        <p>{{trip.TripDescription}}</p>
+                        <span class="card-title grey-text text-darken-4" style="font-weight: normal"><i class="material-icons right">close</i>{{trip.Title}}</span>
+                        <p style="font-weight: normal">{{trip.TripDescription}}</p>
                         <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="openTripDetails(trip)">Details</a>
                     </div>
                 </div>
@@ -249,6 +257,22 @@
                 </li>
             </ul>
         </div>
+
+        <div class="row">
+                <div class="col s6 offset-s3 pagination-box">
+                  <ul class="pagination">
+                    <li :class="{ disabled: curPage === 1 }">
+                      <a href="javascript:void(0)" @click="changePage(curPage - 1)"><i class="material-icons">chevron_left</i></a>
+                    </li>
+                    <li v-for="num in pageList" :class="{ active: num === curPage, 'blue-grey': num === curPage, 'darken-3': num === curPage }">
+                      <a href="javascript:void(0)" @click="changePage(num)">{{ num }}</a>
+                    </li>
+                    <li :class="{ disabled: curPage === totalPageNumber }">
+                      <a href="javascript:void(0)" @click="changePage(curPage + 1)"><i class="material-icons">chevron_right</i></a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
     </div>
 
     <dd-footer></dd-footer>
@@ -261,11 +285,13 @@
 <script src="static/js/lib/jquery.min.js"></script>
 <script src="static/js/lib/materialize.min.js"></script>
 <script src="static/js/lib/materialize.js"></script>
+<script src="static/js/lib/Chart.js"></script>
 
 <script src="static/js/components/dd_header.js"></script>
 <script src="static/js/components/dd_side_nav.js"></script>
 <script src="static/js/components/dd_footer.js"></script>
 <script src="static/js/components/dd_search.js"></script>
+<script src="static/js/components/dd_selector.js"></script>
 <script src="static/js/components/dd_trip_detail.js"></script>
 
 <script src="static/js/controllers/public_trip.js"></script>

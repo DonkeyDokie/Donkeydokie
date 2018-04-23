@@ -7,6 +7,7 @@ body {
 .content {
     flex: 1 0 auto;
     margin: 40px;
+    position: relative;
 }
 
 .background {
@@ -107,7 +108,8 @@ body {
 
 .sender-img{
     float: right;
-    width: 5%;
+    width: 50px;
+    height: 50px;
     margin-left: 15px;
     box-shadow:2px 2px 4px #888;
     -webkit-box-shadow:2px 2px 4px #888;
@@ -116,8 +118,87 @@ body {
 
 .receiver-img{
     float: left;
-    width: 5%;
+    width: 50px;
+    height: 50px;
     margin-right: 15px;
     box-shadow:2px 2px 4px #888;
     -webkit-box-shadow:2px 2px 4px #888;
+}
+
+.pagination-box{
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+}
+
+.pagination {
+    text-align: center;
+}
+
+.pagination li.disabled a {
+    cursor: default;
+    color: #999;
+}
+
+.sign-up-panel-title {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 60px;
+    float: left;
+    margin-left: 5%;
+    margin-top: 3%;
+    color: #555;
+}
+
+#previewAvatar {
+    border: 10px solid #fff;
+}
+
+.travel-slider{
+    margin: 100px 100px 0 100px !important;
+}
+
+.range {
+    border: none !important;
+}
+
+.range-label {
+    font-size: 20px !important;
+    color: #555 !important
+}
+
+.swipe {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+    bottom: 10%;
+}
+
+.avatar2 {
+    height: 200px;
+    width: 200px;
+    border: 10px solid #fff;
+    border-radius: 3px;
+    box-shadow: 2px 2px 4px #888;
+    -webkit-box-shadow:2px 2px 4px #888;
+}
+
+.setting-font {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 60px;
+    float: left;
+    color: #555;
+}
+
+.number {
+    font-size: 28px;
+    color: #81c4ef;
+    font-weight: bold;
+}
+
+.sentence {
+    font-size: 20px;
+    color: #555;
+    font-weight: normal;
 }

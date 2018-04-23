@@ -16,14 +16,11 @@ include '../credentials/credentials.php';
     die('Connection failed: ' . $conn->connect_error);
   }
 
-  $sql = "SELECT * FROM User";
-  $result = $conn->query(sql);
-
-  $user_id = $result->num_rows;
   $login_name= $_POST['login_name'];
   $password = $_POST['password'];
   $confirmed_password = $_POST['confirmed_password'];
   $email = $_POST['email'];
+  $img = $_POST['imgUrl'];
 
   if ($password !== $confirmed_password) {
     $resp = [
@@ -31,33 +28,47 @@ include '../credentials/credentials.php';
       'message' => 'Passwords do not match!'
     ];
   } else {
-    $sql = "SELECT * FROM User WHERE Email = '".$email."'";
-
-    if ($conn->query($sql)->num_rows !== 0) {
+    $stmt = $conn->prepare("SELECT * FROM User WHERE Email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    if ($stmt->get_result()->num_rows !== 0) {
       $resp = [
         'status' => 'fail',
         'message' => $email.' has already been registered.',
         'data' => [
           'login_name' => $login_name,
-          'email' => $email,
-          'user_id' => $row['UserID'],
+          'email' => $email
         ]
       ];
     } else {
 
-      $value_str = join("', '", [$user_id, $login_name, null, null, $password, $email]);
-      $sql = "INSERT INTO User (UserID, LoginName, Name, Remarks, Password, Email) VALUES ('".$value_str."')";
+      $stmt = $conn->prepare("INSERT INTO User (LoginName, Password, Email, ImgUrl) VALUES (?,?,?,?)");
+      $stmt->bind_param("ssss", $login_name, $password, $email, $img);
 
-      if ($conn->query($sql) === TRUE) {
-        $sql = "SELECT * FROM User WHERE Email = '".$email."'";
-        $result = $conn->query($sql);
+      if ($stmt->execute() === TRUE) {
+        $stmt = $conn->prepare("SELECT * FROM User WHERE Email=?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute(); 
+        $result = $stmt->get_result();
         $row = $result->fetch_assoc();
+
+        $session_key = hash('sha256', $row['Email']);
+        $expire_time = time() + (7* 24 * 60 * 60);
+
+        $sql = "UPDATE User SET SessionKey ='".$session_key."', ExpireTime = FROM_UNIXTIME('".$expire_time."') WHERE UserID=".$row['UserID'];
+        
+        if ($conn->query($sql) === TRUE) {
+          header('Session-Key:'.$session_key);
+          header('Expiration-Time:'.$expire_time);
+        } 
         $resp = [
           'status' => 'success',
+          'message' => 'Sign up succeed!',
           'data' => [
             'login_name' => $login_name,
             'email' => $email,
             'user_id' => $row['UserID'],
+            'img' => $img,
           ]
         ];
       } else {

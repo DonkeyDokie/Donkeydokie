@@ -4560,7 +4560,7 @@ if (Vel) {
     var showRangeBubble = function (thumb) {
       var paddingLeft = parseInt(thumb.parent().css('padding-left'));
       var marginLeft = -7 + paddingLeft + 'px';
-      thumb.velocity({ height: "30px", width: "30px", top: "-30px", marginLeft: marginLeft }, { duration: 300, easing: 'easeOutExpo' });
+      // thumb.velocity({ height: "30px", width: "30px", top: "-30px", marginLeft: marginLeft }, { duration: 300, easing: 'easeOutExpo' });
     };
 
     var calcRangeOffset = function (range) {
@@ -4582,6 +4582,8 @@ if (Vel) {
 
       var offsetLeft = calcRangeOffset($(this));
       thumb.addClass('active').css('left', offsetLeft);
+      console.log("change");
+      range_mousedown = true;
     });
 
     $(document).on('mousedown touchstart', range_type, function (e) {
@@ -4607,11 +4609,13 @@ if (Vel) {
         var offsetLeft = calcRangeOffset($(this));
         thumb.addClass('active').css('left', offsetLeft);
       }
+      console.log("start");
     });
 
     $(document).on('mouseup touchend', range_wrapper, function () {
       range_mousedown = false;
       $(this).removeClass('active');
+      console.log("up");
     });
 
     $(document).on('input mousemove touchmove', range_wrapper, function (e) {
@@ -4628,20 +4632,23 @@ if (Vel) {
         thumb.addClass('active').css('left', offsetLeft);
         thumb.find('.value').html(thumb.siblings(range_type).val());
       }
+      console.log("move");
     });
 
     $(document).on('mouseout touchleave', range_wrapper, function () {
-      if (!range_mousedown) {
+      if (range_mousedown) {
 
         var thumb = $(this).children('.thumb');
         var paddingLeft = parseInt($(this).css('padding-left'));
         var marginLeft = 7 + paddingLeft + 'px';
 
-        if (thumb.hasClass('active')) {
-          thumb.velocity({ height: '0', width: '0', top: '10px', marginLeft: marginLeft }, { duration: 100 });
-        }
+        // if (thumb.hasClass('active')) {
+        //   thumb.velocity({ height: '0', width: '0', top: '10px', marginLeft: marginLeft }, { duration: 100 });
+        // }
+        console.log("leave")
         thumb.removeClass('active');
       }
+      console.log("leave")
     });
 
     /**************************
@@ -9421,22 +9428,22 @@ if (Vel) {
 
         function xpos(e) {
           // touch event
-          if (e.targetTouches && e.targetTouches.length >= 1) {
-            return e.targetTouches[0].clientX;
-          }
+          // if (e.targetTouches && e.targetTouches.length >= 1) {
+          //   return e.targetTouches[0].clientX;
+          // }
 
-          // mouse event
-          return e.clientX;
+          // // mouse event
+          // return e.clientX;
         }
 
         function ypos(e) {
           // touch event
-          if (e.targetTouches && e.targetTouches.length >= 1) {
-            return e.targetTouches[0].clientY;
-          }
+          // if (e.targetTouches && e.targetTouches.length >= 1) {
+          //   return e.targetTouches[0].clientY;
+          // }
 
-          // mouse event
-          return e.clientY;
+          // // mouse event
+          // return e.clientY;
         }
 
         function wrap(x) {

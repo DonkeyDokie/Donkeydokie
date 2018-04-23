@@ -9,20 +9,34 @@
     die('Connection failed: ' . $conn->connect_error);
   }
 
-$sql =  "SELECT PublicTrips.TripID, Title, StartDate, Length, TravelStyleName, TravelStyleIcon, 
+$user_id = $_POST['user_id'];
+
+$sql1 =  "SELECT DISTINCT PublicTrips.TripID, Title, StartDate, Length, TravelStyleName, TravelStyleIcon, 
         TripDescription, Remarks, Requirements, Budget, VisibleAttributes, isOpen, ImgUrl, Nicename AS Location 
         FROM PublicTrips, TravelStyles, At, Countries
         WHERE PublicTrips.TravelStyleID = TravelStyles.TravelStyleID AND At.TripID = PublicTrips.TripID AND At.LocationID = Countries.ISO
-        UNION 
-        SELECT DISTINCT PublicTrips.TripID, Title, StartDate, Length, TravelStyleName, TravelStyleIcon, 
-        TripDescription, Remarks, Requirements, Budget, VisibleAttributes, isOpen, ImgUrl, null AS Location 
-        FROM PublicTrips, TravelStyles, At 
-        WHERE PublicTrips.TravelStyleID = TravelStyles.TravelStyleID AND PublicTrips.TripID NOT IN 
-        (SELECT TripID FROM At)";
+        AND isOpen = 1
+        AND PublicTrips.TripID NOT IN 
+        (SELECT DISTINCT TripID FROM Owns WHERE Owns.UserID = '".$user_id."')
+        AND PublicTrips.TripID NOT IN 
+        (SELECT DISTINCT TripID FROM Applies WHERE Applies.UserID = '".$user_id."')";
 
-  $result = $conn->query($sql);
+  $result1 = $conn->query($sql1);
 
-  if (!$result) {
+
+$sql2 =  "SELECT DISTINCT PublicTrips.TripID, Title, StartDate, Length, TravelStyleName, TravelStyleIcon, 
+        TripDescription, Remarks, Requirements, Budget, VisibleAttributes, isOpen, ImgUrl, Nicename AS Location 
+        FROM PublicTrips, TravelStyles, At, Countries
+        WHERE PublicTrips.TravelStyleID = TravelStyles.TravelStyleID AND At.TripID = PublicTrips.TripID AND At.LocationID = Countries.ISO
+        AND (isOpen = 0
+        OR (PublicTrips.TripID IN 
+        (SELECT DISTINCT TripID FROM Owns WHERE Owns.UserID = '".$user_id."')
+        OR PublicTrips.TripID IN 
+        (SELECT DISTINCT TripID FROM Applies WHERE Applies.UserID = '".$user_id."')))";
+
+$result2 = $conn->query($sql2);
+
+  if (!$result1 || !$result2) {
     $resp = [
       'status' => 'fail',
       'message' => 'Error: '.$conn->error
@@ -30,10 +44,16 @@ $sql =  "SELECT PublicTrips.TripID, Title, StartDate, Length, TravelStyleName, T
   } else {
     $resp = [
       'status' => 'success',
-      'data' => []
+      'data' => [
+        'acceptable' => [],
+        'unAcceptable' => []
+      ]
     ];
-    while ($row = $result->fetch_assoc()) {
-      array_push($resp['data'], $row);
+    while ($row = $result1->fetch_assoc()) {
+      array_push($resp['data']['acceptable'], $row);
+    }
+    while ($row = $result2->fetch_assoc()) {
+      array_push($resp['data']['unAcceptable'], $row);
     }
   }
 

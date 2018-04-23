@@ -1,4 +1,5 @@
 Vue.config.devtools = true;
+var PAGE_LIMIT = 10;
 
 var post_app = new Vue({
     el: '#posts_app',
@@ -6,27 +7,29 @@ var post_app = new Vue({
         return {
             user_id: "",
             userInfo: "",
-            message: "",
-            personal_applications: [],
-            personal_trips: [],
-            created_open_trips: [],
-            created_closed_trips: [],
-            showing_trips: [],
-            applicants: [],
+            created_open_trips: {},
+            created_closed_trips: {},
+            showing_trips: {},
+            applicants: {},
             current_trip_id: "",
+            current_applicant: "",
             on_delete_trip: "",
             on_edit_trip_id: "",
             on_edit_trip: {},
             message: "",
             offlineUserList: [],
             onlineUserList: [],
-            sendMessage: "",
-            url: "posts"
+            showing : "open",
+            url: "posts",
+            curPage : 1,
+            totalPageNumber : 1,
+            pageList : [1]
         }
     }, 
     ready: function() {
 
         $('.modal').modal();
+        $('select').material_select();
 
         $('.datepicker').pickadate({
           format: 'yyyy-mm-dd',
@@ -40,6 +43,7 @@ var post_app = new Vue({
 
         this.fetchUserID();
         this.fetchUserList();
+
         var cookies = document.cookie.split('; ');
         var cookieObj = {};
         cookies.forEach(function(cookieStr) {
@@ -53,259 +57,148 @@ var post_app = new Vue({
         var _this = this;
         if (cookieObj.hasOwnProperty('DonkeyDokieAUTH')) {
           // display personal info
-          $.ajax({
-            method: 'POST',
-            url: 'api/auto_signin.php',
-            timeout: 30000,
-            success: function(resp) {
-              console.log("success auto login!");
-              if (!resp || resp.status !== 'success') {
-                location.href = '/';
-                return;
-              }
-              _this.userInfo = resp.data;
-            },
-            error: function() { 
-              console.log("personal info display fail");
-              // location.href = '/'; 
-            }
+          this.ajaxCall('api/auto_signin.php', 'POST', null, function callback(resp, me){
+            me.userInfo = resp.data;
+            var url = me.userInfo.img;
+            me.userInfo.img = "\././" + url.substring(1, url.length);
           });
+
         }
 
-        $.ajax({
-          method: 'POST',
-          url: 'api/get_personal_created_open_trips.php',
-          success: function(resp) {
-            if (!resp || resp.status != 'success') {
-              console.log(resp)
-              return;
-            }
-            _this.created_open_trips = resp.data;
-            for(index in _this.created_open_trips){
-              _this.created_open_trips[index].display_open = 'inline-block';
-              _this.created_open_trips[index].display_close = 'none';
-              var url = _this.created_open_trips[index].ImgUrl;
-              if (url && url[0] == "\""){
-                _this.created_open_trips[index].ImgUrl = "\././" + url.substring(2, url.length - 1);
-              } else if (url && url[0] == "."){
-                _this.created_open_trips[index].ImgUrl = "\././" + url.substring(1, url.length);
-              }
-            }
-            _this.showing_trips = _this.created_open_trips;
-            for (var i in _this.showing_trips){
-                _this.showParticipants(_this.showing_trips[i], i);
-            }
-          },
-          error: function() { 
-            console.log("personal created trips display fail");
-            // location.href = '/'; 
-          }
-        });
+        var _this = this;
 
-        $.ajax({
-          method: 'POST',
-          url: 'api/get_personal_created_closed_trips.php',
-          success: function(resp) {
-            if (!resp || resp.status != 'success') {
-              return;
-            }
-            _this.created_closed_trips = resp.data;
-            for(index in _this.created_closed_trips){
-              _this.created_closed_trips[index].display_open = 'none';
-              _this.created_closed_trips[index].display_close = 'inline-block';
-              var url = _this.created_closed_trips[index].ImgUrl;
-              if (url[0] == "\""){
-                _this.created_closed_trips[index].ImgUrl = "\././" + url.substring(2, url.length - 1);
-              } else if (url[0] == "."){
-                _this.created_closed_trips[index].ImgUrl = "\././" + url.substring(1, url.length);
-              }
-            }
-          },
-          error: function() { 
-            console.log("personal created trips display fail");
-            // location.href = '/'; 
+        this.ajaxCall('api/get_personal_created_all_trips.php', 'POST', null, function callback(resp, me){
+
+          for (var i in resp.data.close){
+            me.created_closed_trips[resp.data.close[i].TripID] = resp.data.close[i];
+            me.created_closed_trips[resp.data.close[i].TripID].display_open = 'none';
+            me.created_closed_trips[resp.data.close[i].TripID].display_close = 'inline-block';
+            var url = me.created_closed_trips[resp.data.close[i].TripID].ImgUrl;
+            me.created_closed_trips[resp.data.close[i].TripID].ImgUrl = "\././" + url.substring(1, url.length);
           }
+
+          for (var i in resp.data.open){
+            me.created_open_trips[resp.data.open[i].TripID] = resp.data.open[i];
+            me.created_open_trips[resp.data.open[i].TripID].display_open = 'inline-block';
+            me.created_open_trips[resp.data.open[i].TripID].display_close = 'none';
+            var url = me.created_open_trips[resp.data.open[i].TripID].ImgUrl;
+            me.created_open_trips[resp.data.open[i].TripID].ImgUrl = "\././" + url.substring(1, url.length);
+          }
+
+          me.showing_trips = me.created_open_trips;
+
         });
 
     },
     methods: {
-      showApplicants: function(trip_id) {
-        var _this = this;
-        $.ajax({
-            url: 'api/get_trip_applicants.php',
-            method: 'POST',
-            datatype: 'json',
-            data: {
-              trip_id: trip_id
-            },
-            success: function(resp) {
-                console.log(resp);
-                if (!resp || resp.status !== "success") {
-                    _this.title = "Error";
-                    return;
-                }
-                _this.applicants = resp.data;
-                _this.current_trip_id = trip_id;
-                $('#modal-applicants').modal('open');
-            },
-            error: function() {
-                console.log(resp);
-            }
-        });
-      },
+
       fetchUserID: function() {
-        var _this = this;
-        $.ajax({
-            url: 'api/get_user_id_from_cookie.php',
-            method: 'POST',
-            datatype: 'json',
-            success: function(resp) {
-                _this = this;
-                console.log("fetch user succeed\n");
-                if (!resp || resp.status !== "success") {
-                    _this.title = "Error";
-                    return;
-                }
-                _this.user_id = resp.data.user_id;
-            },
-            error: function() {
-                console.log("fetch user fail\n");
-            }
+
+        this.ajaxCall('api/get_user_id_from_cookie.php', 'POST', null, function callback(resp, me){
+          me.user_id = resp.data.user_id;
+          me.message = resp.message;
         });
+
       },
-      acceptApplicant: function(id){
-        $.ajax({
-          method: 'POST',
-          url: 'api/update_application.php',
-          datatype:'json',
-          data: {
-              trip_id: this.current_trip_id,
-              user_id: id,
-              status: "Approved"
-          },
-          success: function(resp) {
-              console.log(resp);
-              if (!resp || resp.status !== "success") {
-                  alert("Failed");
-                  return;
-              }
-              alert("Succeed");
-          },
-          error: function() { 
-              console.log(resp);
-          }
+      showApplicants: function(trip_id) {
+
+        this.current_trip_id = trip_id;
+
+        var data = {
+            trip_id: trip_id
+        }
+
+        this.ajaxCall('api/get_trip_applicants.php', 'POST', data, function callback(resp, me){
+          me.applicants = resp.data; 
+          me.message = resp.message;
+          $('#modal-applicants').modal('open');
         });
-        $.ajax({
-          method: 'POST',
-          url: 'api/approve_application.php',
-          datatype:'json',
-          data: {
-              trip_id: this.current_trip_id,
-              user_id: id
-          },
-          success: function(resp) {
-              console.log(resp);
-              if (!resp || resp.status !== "success") {
-                  alert("Failed");
-                  return;
-              }
-              alert("Succeed");
-          },
-          error: function() { 
-              console.log(resp);
-          }
-        });
-      },
-      denyApplicant: function(id) {
-        $.ajax({
-          method: 'POST',
-          url: 'api/update_application.php',
-          datatype:'json',
-          data: {
-              trip_id: this.current_trip_id,
-              user_id: id,
-              status: "Denied"
-          },
-          success: function(resp) {
-              console.log(resp);
-              if (!resp || resp.status !== "success") {
-                  alert("Failed");
-                  return;
-              }
-              alert("Succeed");
-          },
-          error: function() { 
-              console.log(resp);
-          }
-        });
+
       },
       onApplicantsClose: function(){
         $('#modal-applicants').modal('close');
       },
+      onAcceptOpen: function(id) {
+        this.current_applicant = id;
+        $('#modal-accept').modal('open');
+      },
+      onAcceptCancel: function(id) {
+        $('#modal-accept').modal('close');
+      },
+      acceptApplicant: function(){
+
+        var data = {
+            trip_id: this.current_trip_id,
+            user_id: this.current_applicant,
+            status: "Approved"
+        }
+
+        this.ajaxCall('api/update_application.php', 'POST', data, function callback(resp, me){
+          me.message = resp.message;
+          $('#modal-message').modal('open');
+          $('#modal-accept').modal('close');
+        });
+
+      },
+      onDenyOpen: function(id) {
+        this.current_applicant = id;
+        $('#modal-deny').modal('open');
+      },
+      onDenyCancel: function(id) {
+        $('#modal-deny').modal('close');
+      },
+      denyApplicant: function() {
+
+        var data = {
+          trip_id: this.current_trip_id,
+          user_id: this.current_applicant,
+          status: "Denied"
+        }
+
+        this.ajaxCall('api/update_application.php', 'POST', data, function callback(resp, me){
+          me.message = resp.message;
+          $('#modal-message').modal('open');
+          $('#modal-deny').modal('close');
+        });
+
+      },
       onDeleteOpen: function(tripID){
-        var _this = this;
-        _this.on_delete_trip = tripID;
+        this.on_delete_trip = tripID;
         $('#modal-delete').modal('open');
       },
       onDeleteCancel: function(){
         $('#modal-delete').modal('close');
       },
       deleteTrip: function(tripID){
-        var _this = this;
-        $.ajax({
-          method: 'POST',
-          url: 'api/delete_trip.php',
-          datatype:'json',
-          data: {
-              tripID: _this.on_delete_trip
-          },
-          success: function(resp) {
-              console.log(resp);
-              if (!resp || resp.status !== "success") {
-                  console.log("Failed");
-                  return;
-              }
-              console.log("Delete");
-          },
-          error: function() { 
-              console.log(resp);
-          }
+
+        var data = {
+          tripID: this.on_delete_trip
+        }
+
+        this.ajaxCall('api/delete_trip.php', 'POST', data,function callback(resp, me){
+          me.message = resp.message;
+          $('#modal-delete').modal('close');
+          $('#modal-message').modal('open');
+          me.updateCreateTrips();
         });
-        _this.message = "Success delete!";
-        $('#modal-delete').modal('close');
-        $('#modal-message').modal('open');
-        _this.updateCreateTrips();
+
       },
       onCloseMessage: function() {
         $('#modal-message').modal('close');
       },
       onEditOpen: function(tripID){
+        this.on_edit_trip_id = tripID;
 
-        var _this = this;
-        _this.on_edit_trip_id = tripID;
+        var data = {
+          tripID : this.on_edit_trip_id
+        }
 
-        $.ajax({
-          method: 'POST',
-          url: 'api/get_trip_info.php',
-          datatype:'json',
-          data: {
-            tripID : _this.on_edit_trip_id
-          },
-          success: function(resp) {
-            console.log(resp);
-            if (!resp || resp.status !== "success") {
-                console.log("Failed");
-                return;
-            }
-            _this.on_edit_trip = resp.data[0];
-            console.log(_this.on_edit_trip)
-          },
-          error: function() { 
-              console.log(resp);
-          }
+        this.ajaxCall('api/get_trip_info.php', 'POST', data,function callback(resp, me){
+          me.on_edit_trip = resp.data[0];
         });
 
         $('#modal-edit').modal('open');
+        
       },
       onEditCancel: function(){
         $('#modal-edit').modal('close');
@@ -319,239 +212,221 @@ var post_app = new Vue({
         fd.append('file',image);
         _this.on_edit_trip.imgUrl = null;
 
-        $.ajax({
-          url: 'api/post_images.php',
-          method: 'POST',
-          processData:false,
-          contentType:false,
-          data: fd,
-          success: function(resp) {
-              resp = JSON.parse(resp);
-              if (resp.status == "fail"){
-                  _this.message = resp.message;
-                  $('#modal-message').modal('open');
-              } else {
-                  _this.on_edit_trip.imgUrl = resp.data;
-              }
-              if (resp.status != "fail"){
-                $.ajax({
-                  method: 'POST',
-                  url: 'api/update_trip.php',
-                  datatype:'json',
-                  data: {
-                    trip_info : _this.on_edit_trip
-                  },
-                  success: function(resp) {
-                      resp = JSON.parse(resp);
-                      if (!resp || resp.status !== "success") {
-                          _this.message = resp.message;
-                          $('#modal-message').modal('open');
-                          return;
-                      }
-                      _this.message = resp.message;
+        var data = {
+          trip_info : _this.on_edit_trip
+        }
+
+        if($('li.active.selected')[0]){
+          _this.on_edit_trip.Location = $('li.active.selected')[0].children[0].innerHTML;
+        }
+
+        if (!image){
+          this.ajaxCall('api/update_trip.php', 'POST', data, function callback(resp, me){
+            me.message = resp.message;
+            $('#modal-message').modal('open');
+            $('#modal-edit').modal('close');
+            me.updateCreateTrips();
+          });
+        } else {
+          $.ajax({
+            url: 'api/post_images.php',
+            method: 'POST',
+            processData:false,
+            contentType:false,
+            data: fd,
+            success: function(resp) {
+                resp = JSON.parse(resp);
+                if (resp.status == "fail"){
+                    _this.message = resp.message;
+                    $('#modal-message').modal('open');
+                } else {
+                    data.trip_info.imgUrl = resp.data;
+                    _this.ajaxCall('api/update_trip.php', 'POST', data, function callback(resp, me){
+                      me.message = resp.message;
                       $('#modal-message').modal('open');
                       $('#modal-edit').modal('close');
-                      _this.updateCreateTrips();
-                  },
-                  error: function() { 
-                      _this.message = resp.message;
-                      $('#modal-message').modal('open');
-                  }
-                });
+                      me.updateCreateTrips();
+                    });
+                }
+            },
+            error: function(resp) {
+              _this.message = resp.message;
+              $('#modal-message').modal('open');
             }
-          },
-          error: function(resp) {
-            _this.message = resp.message;
-            $('#modal-message').modal('open');
-          }
-        });
+          });
+        }
+
       },
       onCloseOpen: function(tripID){
+
         var _this = this;
         _this.on_edit_trip_id = tripID;
+
         $('#modal-close').modal('open');
+
       },
       onCloseCancel: function(){
+
         $('#modal-close').modal('close');
+
       },
       onOpenOpen: function(tripID){
+
         var _this = this;
         _this.on_edit_trip_id = tripID;
+
         $('#modal-open').modal('open');
+
       },
       onOpenCancel: function(){
+
         $('#modal-open').modal('close');
+
       },
-      closeTrip: function(){
-        var _this = this;
-        console.log(_this.on_edit_trip_id);
-        $.ajax({
-          method: 'POST',
-          url: 'api/update_trip_status.php',
-          datatype:'json',
-          data: {
-            trip_id : _this.on_edit_trip_id,
-            status :0
-          },
-          success: function(resp) {
-              console.log(resp);
-              if (!resp || resp.status !== "success") {
-                  console.log("Failed");
-                  return;
-              }
-              _this.message = resp.message;
-              _this.updateCreateTrips();
-              $('#modal-close').modal('close');
-          },
-          error: function() { 
-              console.log(resp);
-          }
+      closeTrip: function(){   
+
+        var data = {
+          trip_id : this.on_edit_trip_id,
+          status :0
+        }
+
+        this.ajaxCall('api/update_trip_status.php', 'POST', data,function callback(resp, me){
+          me.message = resp.message;
+          me.updateCreateTrips();
+          $('#modal-close').modal('close');
         });
-        _this.updateCreateTrips();
-        $('#modal-close').modal('close');
-        
+
       },
       openTrip: function(){
-        var _this = this;
-        console.log(_this.on_edit_trip_id);
-        $.ajax({
-          method: 'POST',
-          url: 'api/update_trip_status.php',
-          datatype:'json',
-          data: {
-            trip_id : _this.on_edit_trip_id,
-            status :1
-          },
-          success: function(resp) {
-              console.log(resp);
-              if (!resp || resp.status !== "success") {
-                  console.log("Failed");
-                  return;
-              }
-              _this.message = resp.message;
-              _this.updateCreateTrips();
-              $('#modal-open').modal('close');
-          },
-          error: function() { 
-              console.log(resp);
-          }
+        
+        var data = {
+          trip_id : this.on_edit_trip_id,
+          status :1
+        }
+
+        this.ajaxCall('api/update_trip_status.php', 'POST', data,function callback(resp, me){
+          me.message = resp.message;
+          me.updateCreateTrips();
+          $('#modal-open').modal('close');
         });
-        $('#modal-open').modal('close');
-        _this.updateCreateTrips();
         
       },
       updateCreateTrips: function() {
 
-        var _this = this;
 
-          $.ajax({
-            method: 'POST',
-            url: 'api/get_personal_created_open_trips.php',
-            success: function(resp) {
-              if (!resp || resp.status !== 'success') {
-                return;
-              }
-              _this.created_open_trips = resp.data;
-              for(i in _this.created_open_trips){
-                _this.created_open_trips[i].display_open = 'inline-block';
-                _this.created_open_trips[i].display_close = 'none';
-                var url = _this.created_open_trips[index].ImgUrl;
-                if (url[0] == "\""){
-                  _this.created_open_trips[index].ImgUrl = "\././" + url.substring(2, url.length - 1);
-                } else if (url[0] == "."){
-                  _this.created_open_trips[index].ImgUrl = "\././" + url.substring(1, url.length);
-                }
-              }
-            },
-            error: function() { 
-              console.log("personal created trips display fail");
-            }
-          });
+        this.ajaxCall('api/get_personal_created_all_trips.php', 'POST', null, function callback(resp, me){
 
-          $.ajax({
-            method: 'POST',
-            url: 'api/get_personal_created_closed_trips.php',
-            success: function(resp) {
-              
-              if (!resp || resp.status !== 'success') {
-                return;
-              }
-              _this.created_closed_trips = resp.data;
-              for(i in _this.created_closed_trips){
-                _this.created_closed_trips[i].display_open = 'inline-block';
-                _this.created_closed_trips[i].display_close = 'none';
-                var url = _this.created_closed_trips[index].ImgUrl;
-                if (url[0] == "\""){
-                  _this.created_closed_trips[index].ImgUrl = "\././" + url.substring(2, url.length - 1);
-                } else if (url[0] == "."){
-                  _this.created_closed_trips[index].ImgUrl = "\././" + url.substring(1, url.length);
-                }
-              }
-              
-            },
-            error: function() { 
-              console.log("personal created trips display fail");
-            }
-          });
+          me.created_closed_trips = {};
+          me.created_open_trips = {};
 
-      },
-      showParticipants: function(trip, index){
-        var _this = this;
-        $.ajax({
-          method: 'POST',
-          url: 'api/get_participants.php',
-          data: {
-            trip_id : trip.TripID
-          },
-          success: function(resp) {
-            if (!resp || resp.status !== 'success') {
-              return;
+          for (var i in resp.data.close){
+            me.created_closed_trips[resp.data.close[i].TripID] = resp.data.close[i];
+            me.created_closed_trips[resp.data.close[i].TripID].display_open = 'none';
+            me.created_closed_trips[resp.data.close[i].TripID].display_close = 'inline-block';
+            var url = me.created_closed_trips[resp.data.close[i].TripID].ImgUrl;
+            me.created_closed_trips[resp.data.close[i].TripID].ImgUrl = "\././" + url.substring(1, url.length);
+            if (me.showing == "closed"){
+              me.$data.created_closed_trips = Object.assign({}, me.$data.created_closed_trips);
+              me.$data.showing_trips = me.created_closed_trips;
+              me.$data.showing_trips = Object.assign({}, me.$data.showing_trips);
+              var count = 0;
+              for (index in me.showing_trips){
+                  count++;
+              }
+              me.totalPageNumber = Math.ceil(count / PAGE_LIMIT);
+              me.pageList = [];
+              for (i = 1; i <= me.totalPageNumber; i++){
+                  me.pageList.push(i);
+              }
+              me.$data.pageList = Object.assign({}, me.$data.pageList);
             }
-            trip.participants = [];
-            for (i in resp.data){
-              trip.participants.push(resp.data[i]);
-            }
-            if (_this.$data.showing_trips[index]){
-              _this.$data.showing_trips[index].participants = trip.participants;
-              _this.$data.showing_trips = Object.assign({}, _this.$data.showing_trips);
-            }
-          },
-          error: function() { 
-            console.log("get participants fail");
+          }
+
+          for (var i in resp.data.open){
+            me.created_open_trips[resp.data.open[i].TripID] = resp.data.open[i];
+            me.created_open_trips[resp.data.open[i].TripID].display_open = 'inline-block';
+            me.created_open_trips[resp.data.open[i].TripID].display_close = 'none';
+            var url = me.created_open_trips[resp.data.open[i].TripID].ImgUrl;
+            me.created_open_trips[resp.data.open[i].TripID].ImgUrl = "\././" + url.substring(1, url.length);
+            if (me.showing == "open"){
+              me.$data.created_open_trips = Object.assign({}, me.$data.created_open_trips);
+              me.showing_trips = me.created_open_trips;
+              me.$data.showing_trips = Object.assign({}, me.$data.showing_trips);
+              var count = 0;
+              for (index in me.showing_trips){
+                  count++;
+              }
+              me.totalPageNumber = Math.ceil(count / PAGE_LIMIT);
+              me.pageList = [];
+              for (i = 1; i <= me.totalPageNumber; i++){
+                  me.pageList.push(i);
+              }
+              me.$data.pageList = Object.assign({}, me.$data.pageList);
+            } 
           }
         });
+
       },
       changeStatus: function(status){
-        var _this = this;
+
         if (status == 1){
-          _this.showing_trips = _this.created_open_trips;
+          this.showing = "open";
+          this.showing_trips = this.created_open_trips;
         } else {
-          _this.showing_trips = _this.created_closed_trips;
-        }
-        for (var i in _this.showing_trips){
-          _this.showParticipants(_this.showing_trips[i], i);
+          this.showing = "closed";
+          this.showing_trips = this.created_closed_trips;
         }
       },
       fetchUserList: function(){
+
+        this.ajaxCall('api/get_user_online_status.php', 'POST', null, function callback(resp, me){
+          me.offlineUserList = resp.offline;
+          me.onlineUserList = resp.online;
+        });
+
+      },
+      ajaxCall: function(url, method, data, callback){
+
         var _this = this;
+    
         $.ajax({
-          method: 'POST',
-          url: 'api/get_user_online_status.php',
+          method: method,
+          url: url,
+          datatype:'json',
+          data: data,
           success: function(resp) {
+            if (!resp.status) resp = JSON.parse(resp);
             if (!resp || resp.status !== 'success') {
               return;
             }
-            _this.offlineUserList = resp.offline;
-            _this.onlineUserList = resp.online;
+            callback(resp, _this);
           },
           error: function() { 
-            console.log("get participants fail");
+            console.log(resp.message);
           }
         });
+      },
+      changePage: function(pageNum) {
+        this.curPage = pageNum;
       },
       logOut: function() {
           document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
       }
+    },
+    watch: {
+      curPage: function(newVal) {
+        this.showingTrips = [];
+        var i = 0;
+        if (newVal < 1) newVal = 1;
+        if (newVal > this.totalPageNumber) newVal = this.totalPageNumber;
+        this.curPage = newVal;
+        while(i < PAGE_LIMIT && this.showing_trips[i + (newVal - 1) * PAGE_LIMIT]){
+          this.showingTrips.push(this.showing_trips[i + (newVal - 1) * PAGE_LIMIT]);
+          i++;
+        }
+      }
     }
 })
+
+
 

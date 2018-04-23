@@ -16,9 +16,10 @@ include '../credentials/credentials.php';
   // $post_email = 'hanfeil2@illinois.edu';
   // $post_password = '12345';
 
-  $sql = "SELECT * FROM User WHERE Email = '".$post_email."'";
-
-  $result = $conn->query($sql);
+  $stmt = $conn->prepare("SELECT * FROM User WHERE Email = ?");
+  $stmt->bind_param("s", $post_email);
+  $stmt->execute();
+  $result = $stmt->get_result();
 
   if ($result->num_rows == 1) {
     $row = $result->fetch_assoc();

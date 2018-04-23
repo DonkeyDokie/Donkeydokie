@@ -34,28 +34,26 @@
               <!-- <div class="col s4 z-depth-3 offset-s8 white"> -->
 
               <div class="input-field col s12">
-                  <input id="icon_prefix" type="text" class="validate"  v-model="sign_up_login_name">
+                  <input id="icon_prefix" type="text" class="validate"  v-model="sign_up_info.login_name">
                   <label for="icon_prefix">Name</label>
               </div>
 
               <div class="input-field col s12">
-                  <input id="password" type="password" class="validate" v-model="sign_up_password">
+                  <input id="password" type="password" class="validate" v-model="sign_up_info.password">
                   <label for="password">Password</label>
               </div>
 
               <div class="input-field col s12">
-                  <input id="password_confirmed" type="password" class="validate" v-model="sign_up_confirmed_password">
+                  <input id="password_confirmed" type="password" class="validate" v-model="sign_up_info.confirmed_password">
                   <label for="password">Confirmed Password</label>
               </div>
 
               <div class="input-field col s12">
-                <input id="email" type="email" class="validate" v-model="sign_up_email">
+                <input id="email" type="email" class="validate" v-model="sign_up_info.email">
                 <label for="email" data-error="wrong" data-success="right">Email</label>
               </div>
-
-              <p v-model="message">{{message}}<p>
                 
-              <a class="waves-effect waves-light btn blue lighten-2" style="margin-top: 10px; margin-bottom: 10px" href="javascript:void(0)" @click="onSignUpSubmit">Sign Up</a>
+              <a class="waves-effect waves-light btn blue lighten-2" style="margin-top: 10px; margin-bottom: 10px" href="javascript:void(0)" @click="onSignUpOpen">Sign Up</a>
               <a class="waves-effect waves-light btn green lighten-2" style="margin-top: 10px; margin-bottom: 10px" href="javascript:void(0)" @click="onChangeToSignIn">Login</a>
           <!-- </div> -->
           </div>
@@ -80,6 +78,126 @@
               </div>
           </div>
 
+          <div id="modal-signup" class="modal">
+                <div class="carousel carousel-slider center" data-indicators="true">
+                          <div class="carousel-item amber lighten-3 white-text" style="height: 700px !important" href="#one!">
+                              <span class="sign-up-panel-title">First Step: Upload Your Avatar</span>
+                              <form action="#">
+                                <div class="file-field input-field">
+                                  <div class="row">
+                                      <div id="previewAvatar" class="card blue-grey darken-1" style="margin: 200px 300px 0 300px; height: 300px">
+                                          <input id="avatar" type="file">
+                                      </div>
+                                  </div>
+                                    <div class="file-path-wrapper">
+                                      <input class="file-path validate" type="text" style="text-align: center; width: 40%">
+                                    </div>
+                                </div>
+                              </form>
+                              <div class="swipe">
+                                <a class="waves-effect waves-light btn swipe" @click="nextPage()">Next</a>
+                              </div>
+                          </div>
+                          <div class="carousel-item teal lighten-4 white-text" style="height: 700px !important" href="#two!">
+                              <div class="row">
+                              <span class="sign-up-panel-title">Second Step: Personal Preferences I</span>
+                              </div>
+                              <div class="row travel-slider">
+                                  <form action="#" class="col s12">
+                                      <p class="range-field">
+                                        <label class="range-label" for="Acceptable_Budget" data-error="wrong" data-success="right">Acceptable Budget (dollar): {{sign_up_recommend.budget_idx}}</label>
+                                        <input class="range" type="range" id="Acceptable_Budget" min="0" max="10000" v-model="sign_up_recommend.budget_idx"/>
+                                      </p>
+                                  </form>
+                                </div>
+                                <div class="row travel-slider ">
+                                    <form action="#" class="col s12">
+                                        <p class="range-field">
+                                          <label class="range-label" for="Favorite_Length" data-error="wrong" data-success="right">Favorite Length (days): {{sign_up_recommend.travel_len_idx}}</label>
+                                          <input class="range" type="range" id="Favorite_Length" min="0" max="30" v-model="sign_up_recommend.travel_len_idx"/>
+                                        </p>
+                                    </form>
+                                </div>
+                                <div class="swipe">
+                                  <a class="waves-effect waves-light btn" @click="prevPage()">Prev</a>
+                                  <a class="waves-effect waves-light btn" @click="nextPage()">Next</a>
+                                </div>
+                            </div>
+                          <div class="carousel-item pink lighten-5 white-text" style="height: 700px !important" href="#three!">
+                              <span class="sign-up-panel-title">Third Step: Personal Preferences II</span>
+
+                            <div class="row travel-slider">
+
+                                <form action="#" class="col s6">
+                                    <p class="range-field">
+                                      <label class="range-label" for="Airplane" data-error="wrong" data-success="right">Airplane: {{sign_up_recommend.travel_style_vec[0]}}</label>
+                                      <input class="range" type="range" id="Airplane" min="0" max="10" v-model="sign_up_recommend.travel_style_vec[0]"/>
+                                    </p>
+                                </form>
+                              
+                                <form action="#" class="col s6">
+                                    <p class="range-field">
+                                      <label class="range-label" for="Road-Trip" data-error="wrong" data-success="right">Road Trip: {{sign_up_recommend.travel_style_vec[1]}}</label>
+                                      <input class="range" type="range" id="Road-Trip" min="0" max="10"  style="border: none !important" v-model="sign_up_recommend.travel_style_vec[1]"/>
+                                    </p>
+                                </form>
+
+                                <form action="#" class="col s6">
+                                    <p class="range-field">
+                                      <label class="range-label" for="Hiking" data-error="wrong" data-success="right">Hiking: {{sign_up_recommend.travel_style_vec[2]}}</label>
+                                      <input class="range" type="range" id="Hiking" min="0" max="10" v-model="sign_up_recommend.travel_style_vec[2]"/>
+                                    </p>
+                                </form>
+
+                                <form action="#" class="col s6">
+                                    <p class="range-field">
+                                      <label class="range-label" for="Hiking" data-error="wrong" data-success="right">Cruise: {{sign_up_recommend.travel_style_vec[3]}}</label>
+                                      <input class="range" type="range" id="Cruise" min="0" max="10" v-model="sign_up_recommend.travel_style_vec[3]"/>
+                                    </p>
+                                </form>
+
+                                <form action="#" class="col s6">
+                                    <p class="range-field">
+                                      <label class="range-label" for="Train" data-error="wrong" data-success="right">Train: {{sign_up_recommend.travel_style_vec[4]}}</label>
+                                      <input class="range" type="range" id="Train" min="0" max="10" v-model="sign_up_recommend.travel_style_vec[4]"/>
+                                    </p>
+                                </form>
+
+                                <form action="#" class="col s6">
+                                    <p class="range-field">
+                                      <label class="range-label" for="Bus" data-error="wrong" data-success="right">Bus: {{sign_up_recommend.travel_style_vec[5]}}</label>
+                                      <input class="range" type="range" id="Bus" min="0" max="10" v-model="sign_up_recommend.travel_style_vec[5]"/>
+                                    </p>
+                                </form>
+
+                                <form action="#" class="col s6">
+                                    <p class="range-field">
+                                      <label class="range-label" for="Biking" data-error="wrong" data-success="right">Biking: {{sign_up_recommend.travel_style_vec[6]}}</label>
+                                      <input class="range" type="range" id="Biking" min="0" max="10" v-model="sign_up_recommend.travel_style_vec[6]"/>
+                                    </p>
+                                </form>
+                                <div class="swipe">
+                                  <a class="waves-effect waves-light btn" @click="prevPage()">Prev</a>
+                                  <a class="waves-effect waves-light btn" @click="nextPage()">Next</a>
+                                </div>
+                            </div>
+
+                          </div>
+                            <div class="carousel-item blue lighten-4 white-text" style="height: 700px !important" href="#four!">
+                              <div class="row">
+                              <span class="sign-up-panel-title">Congratulation! You are almost finished!</span>
+                            </div>
+                              <div class="center row">
+                                  <a style="margin-top: 30%" class="btn waves-effect white grey-text darken-text-2" @click="onSignUpSubmit">Start My Journey</a>
+                                </div>
+                                <div class="swipe">
+                                  <a class="waves-effect waves-light btn" @click="prevPage()">Prev</a>
+                                </div>
+                          </div>
+              </div>
+          </div>
+
+      
         </div>
           
       <br><br>
@@ -145,11 +263,7 @@
       <div class="row">
         <div class="col s12 center">
           <h3><i class="mdi-content-send brown-text"></i></h3>
-          <h4>About Us</h4>
-          <p class="left-align light">DonkeyDokie is a comprehensive platform for college students to find their travel compaions. 
-            Here you can post trips, choose your own compaions and apply for other students' trips. You can also maintain and manage your trips by recording 
-          your experience and tracking your bills. It is an ideal way to get acquainted with college students around the world by sharing your travel notes with others 
-        and exchaging your ideas.</p>
+        <h5 class="col s12 number">{{active_user_number}}</h5><h5 style="color: #555"> Users have started their journeys in Donkeydokie, share your trips and make friends!</h5>
         </div>
       </div>
 
@@ -161,56 +275,34 @@
     <div class="section no-pad-bot">
       <div class="container">
         <div class="row center">
-          <h5 class="col s12 light magic_stroke">{{active_user_number}} Users have started their journeys in Donkeydokie, share your trips and make friends!</h5>
         </div>
       </div>
     </div>
     <div class="parallax"><img src="static/images/background3.jpg" alt="Unsplashed background img 3"></div>
   </div>
 
-  <footer class="page-footer grey darken-2">
-    <div class="container">
-      <div class="row">
-        <div class="col l6 s12">
-          <h5 class="white-text">Donkeydokie</h5>
-          <p class="grey-text text-lighten-4">We are a team of college students working on this project like it's our full time job. Any amount would help support and continue development on this project and is greatly appreciated.</p>
+  <div id="modal-message" class="modal">
+      <div class="modal-content">
+          <div class="row">
+              <span>{{message}}</span>
+          </div>
+      </div>
+      <div class="modal-footer">
+          <a href="javascript:void(0)" class="btn-flat blue lighten-2" @click="onCloseMessage">Ok</a>
+      </div>
+  </div>
 
-        </div>
-        <div class="col l3 s12">
-          <h5 class="white-text">About</h5>
-          <ul>
-            <li><a class="white-text" href="#!">Hanfei Lin</a></li>
-            <li><a class="white-text" href="#!">Ce Guo</a></li>
-            <li><a class="white-text" href="#!">Yifan Hao</a></li>
-            <li><a class="white-text" href="#!">Ziyu Zhou</a></li>
-          </ul>
-        </div>
-        <div class="col l3 s12">
-          <h5 class="white-text">Contact</h5>
-          <ul>
-            <li><a class="white-text" href="#!">hanfeil2@illinois.edu</a></li>
-            <li><a class="white-text" href="#!">ceguo2@illinois.edu</a></li>
-            <li><a class="white-text" href="#!">haoyifan@umich.edu</a></li>
-            <li><a class="white-text" href="#!">ziyuz2@illinois.edu</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <div class="footer-copyright grey darken-3">
-      <div class="container">
-      Made by lgHz
-      </div>
-    </div>
-  </footer>
+  <dd-footer></dd-footer>
 
 
   <!--  Scripts-->
   <!-- <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script> -->
   <script src="static/js/lib/vue.min.js"></script>
   <script src="static/js/lib/jquery.min.js"></script>
-  <script src="static/js/lib/materialize.min.js"></script>
   <script src="static/js/lib/materialize.js"></script>
   <script src="static/js/lib/init.js"></script>
+
+  <script src="static/js/components/dd_footer.js"></script>
   
   <script src="static/js/controllers/index.js"></script>
   </body>

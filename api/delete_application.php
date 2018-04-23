@@ -18,6 +18,7 @@ include '../credentials/credentials.php';
 
   $resp = [
     'status' => 'success',
+    'message' => 'Delete application succeed!'
   ];
   $conn->close();
   header('Content-Type: application/json');

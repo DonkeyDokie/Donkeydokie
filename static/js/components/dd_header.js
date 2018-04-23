@@ -29,9 +29,9 @@ Vue.component('dd-header', {
             <li class="divider"></li>
             <li>
                 <a v-if="url==='setting'" class="amber lighten-3 grey-text text-darken-2" href="setting.html">
-                <i class="material-icons">settings</i>Setting</a>
+                <i class="material-icons">Profile</i></a>
                 <a v-else class="grey-text text-darken-2" href="setting.html">
-                <i class="material-icons">settings</i>Setting</a></li>
+                <i class="material-icons">settings</i>Profile</a></li>
             <li><a class="grey-text text-darken-2" href="."><i class="material-icons">input</i>Log out</a></li>
         </ul>
         <nav>

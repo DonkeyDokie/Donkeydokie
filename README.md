@@ -8,7 +8,8 @@
  
  ## Introduction
 
-Travels are getting more and more popular among college students yet there's no platform dedicated to students which helps to find travel mates and make new friends. Finding people that are willing to travel to the same destination is only the very first step that for gathering a group that can get along. People usually have different budgets, schedules, traveling styles and etcs. Traditionally, in order to find somebody to travel with, people would ask friends, find other people at a hostel and ect. These ways can only targets at a very limited group of people and very slow. With help of the Internet, posting trip information on social media is how most college students are finding trip companions now. It works but not efficient due to reasons such as limited visibility of a personal post, lacking of filtering and recommendation mechanisms. TripGiraffe is a good solution among others which address this problem by providing platform for travel companion searching. However, it is not dedicated to college students, who are usually more willing to travel with other students.
+DonkeyDokie serves college students by providing a platform with trustworthy users that helps with travel patterns hunting, trip organizing and etc.  By enforcing the requirement of an edu email address, DonkeyDokie guarantees the student identity of its users. Along with other rich trip organizing features, such as instant message system, it fulfills the gap between high demand of trip organizing tools among college students and the lack of dedicated platforms.
+
 
 ![](https://github.com/ForestCold/Images/blob/master/6.png)
  

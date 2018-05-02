@@ -2,6 +2,8 @@
 
 > DonkeyDokie is a social media that enables college students to find travel mates for their trips.
 
+[![Watch the video](https://github.com/ForestCold/Images/blob/master/Screen%20Shot%202018-05-02%20at%203.32.10%20PM.png)](https://www.youtube.com/watch?v=fk7EbbQjtMc)
+
  + [GitHub](https://github.com/DonkeyDokie/Donkeydokie)
  + [YouTube ](https://www.youtube.com/watch?v=fk7EbbQjtMc)
  + [Home Page](http://donkeydokie.web.engr.illinois.edu/)
